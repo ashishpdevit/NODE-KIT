@@ -1,0 +1,269 @@
+{
+    "modules":  [
+                    {
+                        "id":  "dashboard",
+                        "name":  "Dashboard",
+                        "description":  "Analytics overview and KPIs",
+                        "resource":  "dashboard",
+                        "tags":  [
+                                     "core"
+                                 ]
+                    },
+                    {
+                        "id":  "users",
+                        "name":  "Admin Users",
+                        "description":  "Manage admin accounts",
+                        "resource":  "users",
+                        "tags":  [
+                                     "team"
+                                 ]
+                    },
+                    {
+                        "id":  "customers",
+                        "name":  "Customers",
+                        "description":  "End-user records and lifecycle",
+                        "resource":  "customers",
+                        "tags":  [
+                                     "crm"
+                                 ]
+                    },
+                    {
+                        "id":  "orders",
+                        "name":  "Orders",
+                        "description":  "Commerce order management",
+                        "resource":  "orders",
+                        "tags":  [
+                                     "commerce"
+                                 ]
+                    },
+                    {
+                        "id":  "products",
+                        "name":  "Products",
+                        "description":  "Catalog and inventory",
+                        "resource":  "products",
+                        "tags":  [
+                                     "commerce"
+                                 ]
+                    },
+                    {
+                        "id":  "settings",
+                        "name":  "Settings",
+                        "description":  "Application configuration",
+                        "resource":  "settings",
+                        "tags":  [
+                                     "system"
+                                 ]
+                    },
+                    {
+                        "id":  "faqs",
+                        "name":  "FAQs",
+                        "description":  "Frequently asked questions",
+                        "resource":  "faqs",
+                        "tags":  [
+                                     "support"
+                                 ]
+                    },
+                    {
+                        "id":  "rbac",
+                        "name":  "RBAC",
+                        "description":  "Roles and permissions module",
+                        "resource":  "rbac",
+                        "tags":  [
+                                     "system"
+                                 ]
+                    }
+                ],
+    "permissions":  [
+                        {
+                            "id":  "dashboard:view",
+                            "name":  "View Dashboard",
+                            "description":  "Access the main analytics overview",
+                            "resource":  "dashboard",
+                            "action":  "view"
+                        },
+                        {
+                            "id":  "users:view",
+                            "name":  "View Users",
+                            "description":  "See the list of admin users",
+                            "resource":  "users",
+                            "action":  "view"
+                        },
+                        {
+                            "id":  "users:manage",
+                            "name":  "Manage Users",
+                            "description":  "Create, edit, and deactivate admin users",
+                            "resource":  "users",
+                            "action":  "manage"
+                        },
+                        {
+                            "id":  "customers:view",
+                            "name":  "View Customers",
+                            "description":  "Access customer records",
+                            "resource":  "customers",
+                            "action":  "view"
+                        },
+                        {
+                            "id":  "customers:manage",
+                            "name":  "Manage Customers",
+                            "description":  "Update customer data and status",
+                            "resource":  "customers",
+                            "action":  "manage"
+                        },
+                        {
+                            "id":  "orders:view",
+                            "name":  "View Orders",
+                            "description":  "See order history and detail",
+                            "resource":  "orders",
+                            "action":  "view"
+                        },
+                        {
+                            "id":  "orders:export",
+                            "name":  "Export Orders",
+                            "description":  "Export order data to CSV",
+                            "resource":  "orders",
+                            "action":  "export"
+                        },
+                        {
+                            "id":  "products:view",
+                            "name":  "View Products",
+                            "description":  "Browse the product catalog",
+                            "resource":  "products",
+                            "action":  "view"
+                        },
+                        {
+                            "id":  "products:manage",
+                            "name":  "Manage Products",
+                            "description":  "Create or modify products",
+                            "resource":  "products",
+                            "action":  "manage"
+                        },
+                        {
+                            "id":  "settings:view",
+                            "name":  "View Settings",
+                            "description":  "Read application settings",
+                            "resource":  "settings",
+                            "action":  "view"
+                        },
+                        {
+                            "id":  "settings:manage",
+                            "name":  "Manage Settings",
+                            "description":  "Update configuration data",
+                            "resource":  "settings",
+                            "action":  "manage"
+                        },
+                        {
+                            "id":  "faqs:view",
+                            "name":  "View FAQs",
+                            "description":  "Access FAQ management module",
+                            "resource":  "faqs",
+                            "action":  "view"
+                        },
+                        {
+                            "id":  "faqs:manage",
+                            "name":  "Manage FAQs",
+                            "description":  "Create and edit FAQ entries",
+                            "resource":  "faqs",
+                            "action":  "manage"
+                        },
+                        {
+                            "id":  "rbac:view",
+                            "name":  "View RBAC",
+                            "description":  "Open the roles and permissions module",
+                            "resource":  "rbac",
+                            "action":  "view"
+                        },
+                        {
+                            "id":  "rbac:manage",
+                            "name":  "Manage RBAC",
+                            "description":  "Create roles and control permissions",
+                            "resource":  "rbac",
+                            "action":  "manage"
+                        }
+                    ],
+    "roles":  [
+                  {
+                      "id":  "super-admin",
+                      "name":  "Super Admin",
+                      "description":  "Full access to every feature",
+                      "permissions":  [
+                                          "*"
+                                      ],
+                      "isSystem":  true
+                  },
+                  {
+                      "id":  "admin",
+                      "name":  "Administrator",
+                      "description":  "Manage core modules and settings",
+                      "permissions":  [
+                                          "dashboard:view",
+                                          "users:view",
+                                          "users:manage",
+                                          "customers:view",
+                                          "customers:manage",
+                                          "orders:view",
+                                          "orders:export",
+                                          "products:view",
+                                          "products:manage",
+                                          "settings:view",
+                                          "settings:manage",
+                                          "faqs:view",
+                                          "faqs:manage",
+                                          "rbac:view"
+                                      ],
+                      "isSystem":  true
+                  },
+                  {
+                      "id":  "manager",
+                      "name":  "Manager",
+                      "description":  "Operational management for orders and customers",
+                      "permissions":  [
+                                          "dashboard:view",
+                                          "customers:view",
+                                          "customers:manage",
+                                          "orders:view",
+                                          "orders:export",
+                                          "products:view",
+                                          "products:manage",
+                                          "faqs:view"
+                                      ]
+                  },
+                  {
+                      "id":  "support",
+                      "name":  "Support Agent",
+                      "description":  "Customer success and order assistance",
+                      "permissions":  [
+                                          "dashboard:view",
+                                          "customers:view",
+                                          "orders:view",
+                                          "orders:export",
+                                          "faqs:view"
+                                      ]
+                  },
+                  {
+                      "id":  "viewer",
+                      "name":  "Read Only",
+                      "description":  "Analytics and reporting only",
+                      "permissions":  [
+                                          "dashboard:view",
+                                          "customers:view",
+                                          "orders:view",
+                                          "products:view",
+                                          "faqs:view"
+                                      ]
+                  }
+              ],
+    "assignments":  [
+                        {
+                            "id":  "assign-admin-yopmail",
+                            "subjectId":  "admin@yopmail.com",
+                            "subjectType":  "user",
+                            "roleId":  "super-admin"
+                        },
+                        {
+                            "id":  "assign-demo-support",
+                            "subjectId":  "support@example.com",
+                            "subjectType":  "user",
+                            "roleId":  "support"
+                        }
+                    ]
+}

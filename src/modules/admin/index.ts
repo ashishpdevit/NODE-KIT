@@ -1,0 +1,9 @@
+export { adminAuthRouter } from "./auth/auth.router";
+export { adminRouter } from "./users/admin.router";
+export { appMenuLinkRouter } from "./menuLinks/appMenuLink.router";
+export { appSettingRouter } from "./settings/appSettings/appSetting.router";
+export { languageRouter } from "./settings/languages/language.router";
+export { adminFaqRouter } from "./faqs/faq.router";
+export { adminContactRequestRouter } from "./contactRequests/contactRequest.router";
+export { adminNotificationRouter } from "./notifications/notification.router";
+export { adminProductRouter } from "./products/product.router";

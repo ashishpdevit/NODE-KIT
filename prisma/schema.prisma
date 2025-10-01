@@ -1,0 +1,237 @@
+// Prisma schema for Node Starter Kit
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+model Admin {
+  id              Int      @id @default(autoincrement())
+  name            String
+  email           String   @unique
+  role            String
+  status          String
+  passwordHash    String   @map("password_hash")
+  apiTokenVersion Int      @default(1) @map("api_token_version")
+  lastLoginAt     DateTime? @map("last_login_at")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("admins")
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  phone     String?
+  company   String?
+  status    String?
+  country   String?
+  timezone  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+
+  @@map("customers")
+}
+
+model Order {
+  id           String    @id
+  customerName String
+  total        Float
+  date         DateTime
+  status       String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  customer     Customer? @relation(fields: [customerId], references: [id])
+  customerId   Int?
+
+  @@map("orders")
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  price       Float
+  inventory   Int
+  status      String
+  category    String
+  sku         String   @unique
+  description String? @db.Text
+  brand       String?
+  barcode     String?
+  featured    Boolean  @default(false)
+  images      String? @db.Text
+  tags        String? @db.Text
+  variants    String? @db.Text
+  dimensions  String? @db.Text
+  shipping    String? @db.Text
+  seo         String? @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("products")
+}
+
+model AppSetting {
+  id           Int      @id @default(autoincrement())
+  label        String
+  version      String
+  forceUpdates Int      @default(0)
+  maintenance  Int      @default(0)
+  updatedAt    DateTime @default(now())
+
+  @@map("app_settings")
+}
+
+model AppMenuLink {
+  id        Int      @id @default(autoincrement())
+  name      String
+  type      String
+  audience  String
+  link      String
+  updatedAt DateTime @default(now())
+
+  @@map("app_menu_links")
+}
+
+model ContactRequest {
+  id         Int      @id @default(autoincrement())
+  message    String
+  contact    String
+  status     String   @default("pending")
+  adminReply String? @map("admin_reply")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("contact_requests")
+}
+
+model AppUser {
+  id              Int                   @id @default(autoincrement())
+  email           String                @unique
+  name            String?
+  phone           String?
+  passwordHash    String                @map("password_hash")
+  status          String                @default("active")
+  apiTokenVersion Int                   @default(1) @map("api_token_version")
+  lastLoginAt     DateTime?             @map("last_login_at")
+  createdAt       DateTime              @default(now()) @map("created_at")
+  updatedAt       DateTime              @updatedAt @map("updated_at")
+  resetTokens     PasswordResetToken[]
+  notifications   Notification[]
+
+  @@map("users")
+}
+
+model PasswordResetToken {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @map("user_id")
+  tokenHash String    @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  user      AppUser   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tokenHash])
+  @@map("password_reset_tokens")
+}
+
+model Faq {
+  id        Int      @id @default(autoincrement())
+  question  String
+  answer    String
+  type      String
+  status    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("faqs")
+}
+
+model Language {
+  code  String @id
+  label String
+
+  @@map("languages")
+}
+
+model RbacModule {
+  id          String   @id
+  name        String
+  description String? @db.Text
+  resource    String
+  tags        String? @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  permissions RbacPermission[]
+
+  @@map("rbac_modules")
+}
+
+model RbacPermission {
+  id          String   @id
+  name        String
+  description String? @db.Text
+  resource    String
+  action      String
+  moduleId    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  module      RbacModule? @relation(fields: [moduleId], references: [id])
+  roleLinks   RolePermission[]
+
+  @@map("rbac_permissions")
+}
+
+model RbacRole {
+  id          String @id
+  name        String
+  description String? @db.Text
+  isSystem    Boolean @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  permissions RolePermission[]
+  assignments RbacAssignment[]
+
+  @@map("rbac_roles")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         RbacRole       @relation(fields: [roleId], references: [id])
+  permission   RbacPermission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model RbacAssignment {
+  id          String @id
+  subjectId   String
+  subjectType String
+  roleId      String
+  createdAt   DateTime @default(now())
+  role        RbacRole @relation(fields: [roleId], references: [id])
+
+  @@map("rbac_assignments")
+}
+
+model Notification {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  user_type  String   @default("user") //vendor, user, admin
+  title      String
+  message    String
+  read       Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  user AppUser @relation(fields: [user_id], references: [id])
+
+  @@map("notifications")
+}

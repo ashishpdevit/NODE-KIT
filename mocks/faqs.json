@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "question": { "en": "how to close account?", "ar": "كيفية إغلاق الحساب؟" },
+    "answer": { "en": "To close account, please contact support", "ar": "لإغلاق الحساب، يرجى التواصل مع الدعم" },
+    "type": "web",
+    "status": "Active"
+  },
+  {
+    "id": 2,
+    "question": { "en": "how to delete account?", "ar": "كيفية حذف الحساب؟" },
+    "answer": { "en": "To delete account, please contact support", "ar": "لحذف الحساب، يرجى التواصل مع الدعم" },
+    "type": "user_app",
+    "status": "Active"
+  }
+ 
+]
+

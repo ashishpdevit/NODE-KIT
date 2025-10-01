@@ -1,0 +1,7 @@
+[
+  {"id": "ORD-001", "customer": "Alice Johnson", "total": 259.98, "date": "2025-09-20", "status": "Paid"},
+  {"id": "ORD-002", "customer": "Bob Smith", "total": 199.00, "date": "2025-09-19", "status": "Pending"},
+  {"id": "ORD-003", "customer": "Carol Lee", "total": 69.49, "date": "2025-09-18", "status": "Shipped"},
+  {"id": "ORD-004", "customer": "David Kim", "total": 39.50, "date": "2025-09-17", "status": "Refunded"}
+]
+

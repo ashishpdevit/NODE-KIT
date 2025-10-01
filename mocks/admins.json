@@ -1,0 +1,4 @@
+[
+  {"id": 1, "name": "Admin User", "email": "admin@yopmail.com", "role": "Admin", "status": "Active", "password": "AdminPass123!"},
+  {"id": 2, "name": "Admin User 2", "email": "admin@mailinator.com", "role": "Admin", "status": "Active", "password": "AdminPass123!"}
+]

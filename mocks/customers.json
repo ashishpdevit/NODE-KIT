@@ -1,0 +1,63 @@
+[
+  {
+    "id": 1,
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "phone": "+1-555-0123",
+    "company": "Acme Corp",
+    "status": "Active",
+    "country": "USA",
+    "timezone": "America/New_York",
+    "createdAt": "2024-01-15T10:00:00Z",
+    "updatedAt": "2024-01-15T10:00:00Z"
+  },
+  {
+    "id": 2,
+    "name": "Jane Smith",
+    "email": "jane.smith@example.com",
+    "phone": "+44-20-7946-0958",
+    "company": "Tech Solutions Ltd",
+    "status": "Active",
+    "country": "UK",
+    "timezone": "Europe/London",
+    "createdAt": "2024-01-16T14:30:00Z",
+    "updatedAt": "2024-01-16T14:30:00Z"
+  },
+  {
+    "id": 3,
+    "name": "Michael Johnson",
+    "email": "michael.j@example.com",
+    "phone": "+49-30-12345678",
+    "company": "Global Industries",
+    "status": "Inactive",
+    "country": "Germany",
+    "timezone": "Europe/Berlin",
+    "createdAt": "2024-01-17T09:15:00Z",
+    "updatedAt": "2024-01-17T09:15:00Z"
+  },
+  {
+    "id": 4,
+    "name": "Sarah Wilson",
+    "email": "sarah.wilson@example.com",
+    "phone": "+33-1-42-86-83-26",
+    "company": "Paris Consulting",
+    "status": "Active",
+    "country": "France",
+    "timezone": "Europe/Paris",
+    "createdAt": "2024-01-18T11:45:00Z",
+    "updatedAt": "2024-01-18T11:45:00Z"
+  },
+  {
+    "id": 5,
+    "name": "David Brown",
+    "email": "david.brown@example.com",
+    "phone": "+81-3-1234-5678",
+    "company": "Tokyo Enterprises",
+    "status": "Active",
+    "country": "Japan",
+    "timezone": "Asia/Tokyo",
+    "createdAt": "2024-01-19T16:20:00Z",
+    "updatedAt": "2024-01-19T16:20:00Z"
+  }
+]
+

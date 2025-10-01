@@ -1,0 +1,35 @@
+[
+  {
+    "id": 1,
+    "name": "Terms And Conditions",
+    "type": "ckeditor",
+    "for": "User",
+    "updatedAt": "2025-05-26T16:56:00Z",
+    "link": "/legal/terms/user"
+  },
+  {
+    "id": 2,
+    "name": "Terms And Conditions",
+    "type": "ckeditor",
+    "for": "Website",
+    "updatedAt": "2025-05-27T11:05:00Z",
+    "link": "/legal/terms/website"
+  },
+  {
+    "id": 3,
+    "name": "Privacy Policy",
+    "type": "ckeditor",
+    "for": "User",
+    "updatedAt": "2025-01-22T17:26:00Z",
+    "link": "/legal/privacy/user"
+  },
+  {
+    "id": 4,
+    "name": "Privacy Policy",
+    "type": "ckeditor",
+    "for": "Website",
+    "updatedAt": "2025-05-26T16:39:00Z",
+    "link": "/legal/privacy/website"
+  }
+]
+
