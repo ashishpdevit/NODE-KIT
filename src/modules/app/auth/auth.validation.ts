@@ -1,11 +1,21 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 
 const passwordSchema = z
   .string()
   .min(8, "Password must be at least 8 characters long")
   .max(128, "Password must be at most 128 characters long");
 
-export const registerSchema = z.object({
+const deviceTokenSchema = z
+  .string()
+  .trim()
+  .min(10, "Device token looks too short")
+  .max(512, "Device token looks too long");
+
+const optionalDeviceToken = deviceTokenSchema.optional();
+const optionalNotificationsFlag = z.coerce.boolean().optional();
+const optionalLocale = z.string().trim().min(2).max(10).optional();
+
+const registerBaseSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
   password: passwordSchema,
   name: z
@@ -20,12 +30,36 @@ export const registerSchema = z.object({
     .min(8, "Phone number must be at least 8 characters long")
     .max(20, "Phone number must be at most 20 characters long")
     .optional(),
+  locale: optionalLocale,
+  device_token: optionalDeviceToken,
+  notifications_enabled: optionalNotificationsFlag,
 });
 
-export const loginSchema = z.object({
+export const registerSchema = registerBaseSchema.transform(
+  ({ device_token, notifications_enabled, locale, ...rest }) => ({
+    ...rest,
+    locale,
+    deviceToken: device_token,
+    notificationsEnabled: notifications_enabled,
+  }),
+);
+
+const loginBaseSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
   password: passwordSchema,
+  locale: optionalLocale,
+  device_token: optionalDeviceToken,
+  notifications_enabled: optionalNotificationsFlag,
 });
+
+export const loginSchema = loginBaseSchema.transform(
+  ({ device_token, notifications_enabled, locale, ...rest }) => ({
+    ...rest,
+    locale,
+    deviceToken: device_token,
+    notificationsEnabled: notifications_enabled,
+  }),
+);
 
 export const forgotPasswordSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
@@ -36,7 +70,7 @@ export const resetPasswordSchema = z.object({
   password: passwordSchema,
 });
 
-export const profileUpdateSchema = z.object({
+const profileUpdateBaseSchema = z.object({
   name: z
     .string()
     .trim()
@@ -49,7 +83,19 @@ export const profileUpdateSchema = z.object({
     .min(8, "Phone number must be at least 8 characters long")
     .max(20, "Phone number must be at most 20 characters long")
     .optional(),
+  locale: optionalLocale,
+  device_token: optionalDeviceToken,
+  notifications_enabled: optionalNotificationsFlag,
 });
+
+export const profileUpdateSchema = profileUpdateBaseSchema.transform(
+  ({ device_token, notifications_enabled, locale, ...rest }) => ({
+    ...rest,
+    locale,
+    deviceToken: device_token,
+    notificationsEnabled: notifications_enabled,
+  }),
+);
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;

@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client";
+﻿import type { Prisma } from "@prisma/client";
 
 import { prisma } from "@/core/lib/prisma";
 
@@ -10,6 +10,8 @@ const baseSelect = {
   status: true,
   apiTokenVersion: true,
   lastLoginAt: true,
+  deviceToken: true,
+  notificationsEnabled: true,
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.AdminSelect;

@@ -1,18 +1,42 @@
-import type { Request, Response } from "express";
+﻿import type { Request, Response } from "express";
 
 import { toError, toSuccess } from "@/core/utils/httpResponse";
 import { handlePrismaError } from "@/core/utils/prismaError";
-import { parseNumericParam } from "@/core/utils/requestHelpers";
-
 import { adminNotificationService } from "./notification.service";
-import { notificationCreateSchema } from "./notification.validation";
+import {
+  notificationCreateSchema,
+  notificationForAllUsersSchema,
+  notificationForUserSchema,
+} from "./notification.validation";
+
+const serializeSummary = adminNotificationService.formatSummary;
+
+const parseReadQuery = (value: unknown) => {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+  if (value.toLowerCase() === "true") {
+    return true;
+  }
+  if (value.toLowerCase() === "false") {
+    return false;
+  }
+  return undefined;
+};
 
 export const listNotifications = async (req: Request, res: Response) => {
   try {
-    const user_type = typeof req.query.user_type === "string" ? req.query.user_type : undefined;
-    const read = typeof req.query.read === "string" ? req.query.read === "true" : undefined;
+    const userTypeQuery = typeof req.query.user_type === "string" ? req.query.user_type : undefined;
+    const notifiable_type =
+      typeof req.query.notifiable_type === "string"
+        ? req.query.notifiable_type
+        : userTypeQuery === "user"
+        ? "app_user"
+        : undefined;
+    const notifiable_id = typeof req.query.notifiable_id === "string" ? req.query.notifiable_id : undefined;
+    const read = parseReadQuery(req.query.read);
 
-    const notifications = await adminNotificationService.list({ user_type, read });
+    const notifications = await adminNotificationService.list({ notifiable_type, notifiable_id, read });
     res.json(toSuccess("Notifications fetched", notifications));
   } catch (error) {
     return handlePrismaError(res, error);
@@ -21,16 +45,17 @@ export const listNotifications = async (req: Request, res: Response) => {
 
 export const getNotification = async (req: Request, res: Response) => {
   try {
-    const id = parseNumericParam(req.params.id, "notification id");
+    const id = req.params.id;
+    if (!id) {
+      return res.status(400).json(toError("Notification id is required"));
+    }
+
     const notification = await adminNotificationService.get(id);
     if (!notification) {
       return res.status(404).json(toError("Notification not found"));
     }
     res.json(toSuccess("Notification fetched", notification));
   } catch (error) {
-    if (error instanceof Error && error.message.startsWith("Invalid")) {
-      return res.status(400).json(toError(error.message));
-    }
     return handlePrismaError(res, error);
   }
 };
@@ -42,46 +67,62 @@ export const createNotification = async (req: Request, res: Response) => {
       return res.status(400).json(toError("Invalid payload", parsed.error.flatten()));
     }
 
-    const notification = await adminNotificationService.create(parsed.data);
-    res.status(201).json(toSuccess("Notification created", notification));
+    const summary = await adminNotificationService.create(parsed.data);
+    res.status(201).json(toSuccess("Notification created", serializeSummary(summary)));
   } catch (error) {
+    if (error instanceof Error && error.message.includes("not found")) {
+      return res.status(404).json(toError(error.message));
+    }
     return handlePrismaError(res, error);
   }
 };
 
 export const createNotificationForUser = async (req: Request, res: Response) => {
   try {
-    const { user_id, title, message, user_type = "user" } = req.body;
-
-    if (!user_id || !title || !message) {
-      return res.status(400).json(toError("Missing required fields: user_id, title, message"));
+    const parsed = notificationForUserSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json(toError("Invalid payload", parsed.error.flatten()));
     }
 
-    const notification = await adminNotificationService.createForUser(
-      parseInt(user_id),
-      title,
-      message,
-      user_type
+    const summary = await adminNotificationService.createForUser(
+      parsed.data.user_id,
+      parsed.data.title,
+      parsed.data.message,
+      parsed.data.user_type,
+      {
+        email: parsed.data.email,
+        push: parsed.data.push,
+        default_locale: parsed.data.default_locale,
+        localized_content: parsed.data.localized_content,
+        metadata: parsed.data.metadata,
+      },
     );
-    res.status(201).json(toSuccess("Notification created for user", notification));
+    res
+      .status(201)
+      .json(toSuccess("Notification created for user", serializeSummary(summary)));
   } catch (error) {
+    if (error instanceof Error && error.message.includes("not found")) {
+      return res.status(404).json(toError(error.message));
+    }
     return handlePrismaError(res, error);
   }
 };
 
 export const createNotificationForAllUsers = async (req: Request, res: Response) => {
   try {
-    const { title, message, user_type = "user" } = req.body;
-
-    if (!title || !message) {
-      return res.status(400).json(toError("Missing required fields: title, message"));
+    const parsed = notificationForAllUsersSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json(toError("Invalid payload", parsed.error.flatten()));
     }
 
-    const notifications = await adminNotificationService.createForAllUsers(title, message, user_type);
-    res.status(201).json(toSuccess("Notifications created for all users", { 
-      count: notifications.length,
-      notifications 
-    }));
+    const summaries = await adminNotificationService.createForAllUsers(parsed.data);
+    res.status(201).json(
+      toSuccess("Notifications created for all users", {
+        total: summaries.length,
+        delivered: summaries.filter((summary) => summary.persisted).length,
+        notifications: summaries.map(serializeSummary),
+      }),
+    );
   } catch (error) {
     return handlePrismaError(res, error);
   }

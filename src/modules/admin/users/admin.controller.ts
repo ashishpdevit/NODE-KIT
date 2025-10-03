@@ -1,4 +1,4 @@
-import type { Request, Response } from "express";
+﻿import type { Request, Response } from "express";
 import { Prisma } from "@prisma/client";
 
 import { toError, toSuccess } from "@/core/utils/httpResponse";
@@ -39,12 +39,13 @@ export const createAdmin = async (req: Request, res: Response) => {
     return res.status(400).json(toError("Invalid payload", parsed.error.flatten()));
   }
 
-  const { password, ...rest } = parsed.data;
+  const { password, notifications_enabled, ...rest } = parsed.data;
 
   try {
     const created = await adminService.create({
       ...rest,
       passwordHash: await hashPassword(password),
+      ...(notifications_enabled !== undefined ? { notificationsEnabled: notifications_enabled } : {}),
     });
     res.status(201).json(toSuccess("Admin created", created));
   } catch (error) {
@@ -76,6 +77,9 @@ export const updateAdmin = async (req: Request, res: Response) => {
   }
   if (updateData.status !== undefined) {
     prismaUpdate.status = updateData.status;
+  }
+  if (updateData.notifications_enabled !== undefined) {
+    prismaUpdate.notificationsEnabled = updateData.notifications_enabled;
   }
   if (updateData.password) {
     prismaUpdate.passwordHash = await hashPassword(updateData.password);

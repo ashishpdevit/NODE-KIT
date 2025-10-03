@@ -1,4 +1,4 @@
-import { env } from "./env";
+﻿import { env } from "./env";
 
 export const appConfig = {
   name: env.APP_NAME,
@@ -17,4 +17,22 @@ export const authConfig = {
 export const adminAuthConfig = {
   jwtSecret: env.ADMIN_JWT_SECRET,
   jwtExpiresIn: env.ADMIN_JWT_EXPIRES_IN,
+};
+
+export const mailConfig = {
+  transport: env.MAIL_TRANSPORT,
+  from: env.MAIL_FROM,
+  smtp: {
+    host: env.SMTP_HOST,
+    port: env.SMTP_PORT,
+    secure: env.SMTP_SECURE,
+    user: env.SMTP_USER,
+    password: env.SMTP_PASSWORD,
+  },
+};
+
+export const firebaseConfig = {
+  projectId: env.FIREBASE_PROJECT_ID,
+  clientEmail: env.FIREBASE_CLIENT_EMAIL,
+  privateKey: env.FIREBASE_PRIVATE_KEY,
 };

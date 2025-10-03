@@ -1,4 +1,4 @@
-import type { Request, Response } from "express";
+﻿import type { Request, Response } from "express";
 
 import { toError, toSuccess } from "@/core/utils/httpResponse";
 import { handlePrismaError } from "@/core/utils/prismaError";
@@ -39,7 +39,10 @@ export const loginAdmin = async (req: Request, res: Response) => {
   }
 
   try {
-    const updated = await adminAuthService.recordLogin(admin.id);
+    const updated = await adminAuthService.recordLogin(admin.id, {
+      deviceToken: parsed.data.deviceToken,
+      notificationsEnabled: parsed.data.notificationsEnabled,
+    });
     return res.json(toSuccess("Login successful", buildAuthPayload(updated)));
   } catch (error) {
     return handlePrismaError(res, error);
@@ -70,6 +73,21 @@ export const updateAdminPassword = async (req: Request, res: Response) => {
     const updated = await adminAuthService.updatePassword(admin.id, password);
     res.locals.admin = updated;
     return res.json(toSuccess("Password updated", buildAuthPayload(updated)));
+  } catch (error) {
+    return handlePrismaError(res, error);
+  }
+};
+
+export const logoutAdmin = async (_req: Request, res: Response) => {
+  const admin = res.locals.admin as AdminSafe | undefined;
+  if (!admin) {
+    return res.status(401).json(toError("Unauthorized"));
+  }
+
+  try {
+    const updated = await adminAuthService.clearDeviceRegistration(admin.id);
+    res.locals.admin = updated;
+    return res.json(toSuccess("Logout successful", { notificationsEnabled: updated.notificationsEnabled }));
   } catch (error) {
     return handlePrismaError(res, error);
   }

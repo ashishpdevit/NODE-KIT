@@ -1,4 +1,4 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -27,6 +27,16 @@ export const envSchema = z.object({
     .int()
     .positive()
     .default(30),
+  MAIL_TRANSPORT: z.enum(["smtp", "json", "stub"]).default("json"),
+  MAIL_FROM: z.string().email().default("no-reply@node-kit.local"),
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().int().positive().optional(),
+  SMTP_SECURE: z.coerce.boolean().default(false),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASSWORD: z.string().optional(),
+  FIREBASE_PROJECT_ID: z.string().min(1).optional().or(z.literal("")),
+  FIREBASE_CLIENT_EMAIL: z.string().email().optional().or(z.literal("")),
+  FIREBASE_PRIVATE_KEY: z.string().optional().or(z.literal("")),
 });
 
 export const env = envSchema.parse(process.env);

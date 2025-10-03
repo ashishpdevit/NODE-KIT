@@ -11,6 +11,7 @@ A lean TypeScript starter kit for building Express APIs. It now ships with a Pri
 - Seed script that hydrates the database using the original mock JSON files.
 - Jest + Supertest integration tests that run the Prisma migrations and seed automatically.
 - Logger utilities, consistent JSON responses, graceful shutdown, and path-alias aware dev tooling (`ts-node` + `tsconfig-paths`).
+- Unified notification center that persists records, emails users, and fans out Firebase Cloud Messaging pushes.
 
 ## Getting Started
 
@@ -59,6 +60,53 @@ cp .env.example .env
 | `ADMIN_JWT_SECRET` | HMAC secret for admin JWT tokens              | `change-me-admin-jwt-secret-change-me` |
 | `ADMIN_JWT_EXPIRES_IN` | Admin JWT lifetime (e.g. `30m`)                | `30m`                     |
 | `APP_PASSWORD_RESET_TOKEN_TTL_MINUTES` | Password reset token lifetime in minutes       | `30`                       |
+| `MAIL_TRANSPORT` | Mail transport driver (`smtp`, `json`, or `stub`) | `json` |
+| `MAIL_FROM` | Default `from` email address                     | `no-reply@node-kit.local` |
+| `SMTP_HOST` | SMTP host (required for SMTP transport)          | _(empty)_                 |
+| `SMTP_PORT` | SMTP port                                        | `587`                     |
+| `SMTP_SECURE` | Enables TLS for SMTP transport                  | `false`                   |
+| `SMTP_USER` | SMTP username (optional)                         | _(empty)_                 |
+| `SMTP_PASSWORD` | SMTP password (optional)                     | _(empty)_                 |
+| `FIREBASE_PROJECT_ID` | Firebase project used for FCM push delivery | _(empty)_                 |
+| `FIREBASE_CLIENT_EMAIL` | Firebase service account client email        | _(empty)_                 |
+| `FIREBASE_PRIVATE_KEY` | Firebase service account private key (`\n` escaped) | _(empty)_                 |
+
+## Notifications & Mail
+
+The kit includes a reusable mailer (powered by Nodemailer) and a Firebase Cloud Messaging client (via the Admin SDK). Both are orchestrated by the `notificationCenter` service so you can persist a notification record and optionally fan it out over email and push with a single call.
+
+**Localization**
+- Persist per-locale titles/messages with `default_locale` and `localized_content` when creating admin notifications.
+- App users store their preferred `locale`; notification fan-out uses that locale (with fallback heuristics) and persists the whole translation map for future reads.
+- App-facing notification APIs return localized copies alongside the translation catalog so clients can render in multiple languages.
+
+- `src/core/lib/mailer.ts` sets up SMTP/JSON/stub transports driven by `MAIL_*` environment variables.
+- `src/core/lib/firebase.ts` boots the Firebase Admin SDK using the `FIREBASE_*` credentials.
+- `src/core/lib/pushClient.ts` sends multicast pushes through FCM and gracefully logs when credentials are absent.
+- `src/core/services/notificationCenter.ts` persists notifications, respects per-user notification preferences, and coordinates channel delivery (used by the admin notification endpoints).
+- `src/core/templates/email` houses Handlebars layouts/partials (header/footer) so individual templates can reuse a common chrome while injecting custom bodies.
+- Email delivery supports reusable templates via the `master` layout (common header/footer) and can be extended by registering custom templates in `src/core/templates/email`.
+
+To send a notification from any module:
+
+```ts
+import { notificationCenter } from "@/core/services/notificationCenter";
+
+await notificationCenter.notifyUser(42, {
+  title: "Order shipped",
+  message: "Your order #ORD-1001 is on the way.",
+  email: {
+    subject: "We just shipped your order",
+    html: "<p>Track it in the app.</p>",
+  },
+  push: {
+    to: "user-device-token",
+    data: { orderId: "ORD-1001" },
+  },
+});
+```
+
+Admin notification routes now return delivery metadata (`email` and `push`) alongside the persisted record so you can inspect channel outcomes at a glance.
 
 ## Project Structure
 
@@ -66,7 +114,8 @@ cp .env.example .env
 src/
   core/                System-level utilities shared across the app
     config/            Environment parsing + application configuration
-    lib/               Shared libraries (Prisma client singleton, etc.)
+    lib/               Shared libraries (Prisma client, mailer, push client, etc.)
+    services/          Cross-cutting orchestration (notification center)
     middlewares/       Global middleware (auth, error handler, logger)
     utils/             Cross-cutting helpers (logger, responses, security)
   modules/             Domain-focused feature modules
@@ -129,28 +178,30 @@ Each controller returns the shared `{ success, message, data }` payload, and err
 
 ## Mobile App Auth
 
-All `/api/app/auth` endpoints require the `x-api-key` header (or `api_key` query parameter) to match `APP_API_KEY`. Authentication responses return `{ token, user }`, where `token` is a JWT signed with `APP_JWT_SECRET` and `user` contains non-sensitive profile fields.
+All `/api/app/auth` endpoints require the `x-api-key` header (or `api_key` query parameter) to match `APP_API_KEY`. Authentication responses return `{ token, user }`, where `token` is a JWT signed with `APP_JWT_SECRET` and `user` contains non-sensitive profile fields. Register/login payloads accept optional `device_token` + `notifications_enabled` flags so the API can manage Firebase push targets, and `/logout` clears the token server-side. Requests may also send `locale` to capture the user’s preferred language for localized notifications.
 
 | Method & Path                 | Description                               |
 | ----------------------------- | ----------------------------------------- |
 | `POST /api/app/auth/register` | Sign up a new app user and return a JWT   |
-| `POST /api/app/auth/login`    | Exchange email/password for a JWT         |
+| `POST /api/app/auth/login`    | Exchange email/password for a JWT (optionally registers `device_token` & `locale`) |
 | `POST /api/app/auth/forgot-password` | Issue a reset token (returned in response for dev/testing) |
 | `POST /api/app/auth/reset-password`  | Reset the password using the provided token |
 | `GET /api/app/auth/profile`   | Fetch the authenticated profile           |
 | `PATCH /api/app/auth/profile` | Update profile fields and rotate the JWT  |
+| `POST /api/app/auth/logout`   | Clear the stored device token and pause push notifications |
 
 Reset tokens are hashed before storage and expire after `APP_PASSWORD_RESET_TOKEN_TTL_MINUTES`. Successful password resets invalidate older tokens by bumping the user's `apiTokenVersion`.
 
 ## Admin API
 
-All admin endpoints are available under `/api/admin`. Authenticate first using `POST /api/admin/auth/login` with seeded credentials (see `.env/.env.example`). Subsequent requests must include the `Authorization: Bearer <token>` header. The login response returns `{ token, admin }`, and changing an admin password rotates their token version to invalidate existing sessions.
+All admin endpoints are available under `/api/admin`. Authenticate first using `POST /api/admin/auth/login` with seeded credentials (see `.env/.env.example`). Subsequent requests must include the `Authorization: Bearer <token>` header. The login response returns `{ token, admin }`, stores any provided `device_token`, and `/logout` will wipe that token so Firebase pushes stop for that session. Changing an admin password rotates their token version to invalidate existing sessions.
 
 Key admin routes include:
 
 | Path | Description |
 | ---- | ----------- |
-| `POST /api/admin/auth/login` | Exchange admin credentials for a JWT |
+| `POST /api/admin/auth/login` | Exchange admin credentials for a JWT (captures optional admin device token/preferences) |
+| `POST /api/admin/auth/logout` | Clear the stored device token to halt admin pushes |
 | `GET /api/admin/users` | Manage staff accounts |
 | `POST /api/admin/products` | Create or update catalogue items |
 | `PUT /api/admin/contact-requests/:id` | Record replies to contact requests |

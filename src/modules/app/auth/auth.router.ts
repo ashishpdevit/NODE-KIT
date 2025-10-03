@@ -1,4 +1,4 @@
-import { Router } from "express";
+﻿import { Router } from "express";
 
 import { apiKeyAuth } from "@/core/middlewares/apiKeyAuth";
 import { appAuth } from "@/core/middlewares/appAuth";
@@ -7,6 +7,7 @@ import {
   forgotAppUserPassword,
   getAppUserProfile,
   loginAppUser,
+  logoutAppUser,
   registerAppUser,
   resetAppUserPassword,
   updateAppUserProfile,
@@ -23,3 +24,4 @@ authRouter.post("/reset-password", resetAppUserPassword);
 
 authRouter.get("/profile", appAuth, getAppUserProfile);
 authRouter.patch("/profile", appAuth, updateAppUserProfile);
+authRouter.post("/logout", appAuth, logoutAppUser);

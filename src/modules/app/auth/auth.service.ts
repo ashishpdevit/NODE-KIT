@@ -1,4 +1,4 @@
-import { prisma } from "@/core/lib/prisma";
+﻿import { prisma } from "@/core/lib/prisma";
 import { authConfig } from "@/core/config";
 import { createResetTokenPair, hashPassword } from "@/core/utils/security";
 import type { Prisma } from "@prisma/client";
@@ -11,6 +11,9 @@ const baseSelect = {
   status: true,
   apiTokenVersion: true,
   lastLoginAt: true,
+  locale: true,
+  deviceToken: true,
+  notificationsEnabled: true,
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.AppUserSelect;
@@ -23,8 +26,66 @@ const withSecretSelect = {
 export type AppUserSafe = Prisma.AppUserGetPayload<{ select: typeof baseSelect }>;
 export type AppUserWithSecret = Prisma.AppUserGetPayload<{ select: typeof withSecretSelect }>;
 
+type CreateUserInput = {
+  email: string;
+  password: string;
+  name?: string;
+  phone?: string;
+  locale?: string;
+  deviceToken?: string;
+  notificationsEnabled?: boolean;
+};
+
+type LoginUpdateInput = {
+  locale?: string;
+  deviceToken?: string | null;
+  notificationsEnabled?: boolean;
+};
+
+type ProfileUpdateInput = {
+  name?: string;
+  phone?: string;
+  locale?: string;
+  deviceToken?: string;
+  notificationsEnabled?: boolean;
+};
+
 const computeResetExpiry = () =>
   new Date(Date.now() + authConfig.resetTokenTtlMinutes * 60_000);
+
+const applyLoginUpdate = (data: LoginUpdateInput) => {
+  const update: Prisma.AppUserUpdateInput = {};
+  if (data.locale !== undefined) {
+    update.locale = data.locale;
+  }
+  if (data.deviceToken !== undefined) {
+    update.deviceToken = data.deviceToken;
+  }
+  if (data.notificationsEnabled !== undefined) {
+    update.notificationsEnabled = data.notificationsEnabled;
+  }
+  return update;
+};
+
+const applyProfileUpdate = (data: ProfileUpdateInput) => {
+  const update: Prisma.AppUserUpdateInput = {};
+  if (data.name !== undefined) {
+    update.name = data.name;
+  }
+  if (data.phone !== undefined) {
+    update.phone = data.phone;
+  }
+  if (data.locale !== undefined) {
+    update.locale = data.locale;
+  }
+  if (data.deviceToken !== undefined) {
+    update.deviceToken = data.deviceToken;
+  }
+  if (data.notificationsEnabled !== undefined) {
+    update.notificationsEnabled = data.notificationsEnabled;
+  }
+  return update;
+};
 
 export const appAuthService = {
   findByEmailWithSecret: (email: string) =>
@@ -33,7 +94,7 @@ export const appAuthService = {
     prisma.appUser.findUnique({ where: { email }, select: baseSelect }),
   findById: (id: number) =>
     prisma.appUser.findUnique({ where: { id }, select: baseSelect }),
-  createUser: async (input: { email: string; password: string; name?: string; phone?: string }) => {
+  createUser: async (input: CreateUserInput) => {
     const passwordHash = await hashPassword(input.password);
     return prisma.appUser.create({
       data: {
@@ -41,18 +102,32 @@ export const appAuthService = {
         name: input.name,
         phone: input.phone,
         passwordHash,
+        locale: input.locale ?? "en",
+        ...(input.deviceToken ? { deviceToken: input.deviceToken } : {}),
+        ...(input.notificationsEnabled !== undefined
+          ? { notificationsEnabled: input.notificationsEnabled }
+          : {}),
       },
       select: baseSelect,
     });
   },
-  recordLogin: (id: number) =>
+  recordLogin: (id: number, data: LoginUpdateInput = {}) =>
     prisma.appUser.update({
       where: { id },
-      data: { lastLoginAt: new Date() },
+      data: {
+        lastLoginAt: new Date(),
+        ...applyLoginUpdate(data),
+      },
       select: baseSelect,
     }),
-  updateProfile: (id: number, data: { name?: string; phone?: string }) =>
-    prisma.appUser.update({ where: { id }, data, select: baseSelect }),
+  updateProfile: (id: number, data: ProfileUpdateInput) =>
+    prisma.appUser.update({ where: { id }, data: applyProfileUpdate(data), select: baseSelect }),
+  clearDeviceRegistration: (id: number) =>
+    prisma.appUser.update({
+      where: { id },
+      data: { deviceToken: null, notificationsEnabled: false },
+      select: baseSelect,
+    }),
   issuePasswordResetToken: async (userId: number) => {
     await prisma.passwordResetToken.deleteMany({
       where: {

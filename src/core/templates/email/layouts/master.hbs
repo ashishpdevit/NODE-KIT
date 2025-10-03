@@ -1,0 +1,58 @@
+﻿<!doctype html>
+<html lang="{{locale}}">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{subject}}</title>
+    {{#if previewText}}
+      <style type="text/css">
+        .preview-text {
+          display: none !important;
+          visibility: hidden;
+          opacity: 0;
+          color: transparent;
+          height: 0;
+          width: 0;
+        }
+      </style>
+    {{/if}}
+  </head>
+  <body style="background-color:#f3f4f6;margin:0;padding:24px;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+    {{#if previewText}}
+      <div class="preview-text">{{previewText}}</div>
+    {{/if}}
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 10px 25px rgba(15,23,42,0.08);">
+      {{> header}}
+      <tr>
+        <td style="padding:32px;">
+          <h2 style="margin:0 0 16px 0;font-size:20px;line-height:28px;color:#111827;font-weight:600;">
+            {{title}}
+          </h2>
+          {{#if greeting}}
+            <p style="margin:0 0 16px 0;font-size:15px;line-height:22px;color:#111827;">{{greeting}}</p>
+          {{/if}}
+          {{#each intro}}
+            <p style="margin:0 0 16px 0;font-size:15px;line-height:22px;color:#111827;">{{this}}</p>
+          {{/each}}
+          {{#if bodyHtml}}
+            <div style="margin:0 0 16px 0;font-size:15px;line-height:22px;color:#111827;">{{{bodyHtml}}}</div>
+          {{/if}}
+          {{#each body}}
+            <p style="margin:0 0 16px 0;font-size:15px;line-height:22px;color:#111827;">{{this}}</p>
+          {{/each}}
+          {{#each ctas}}
+            <p style="margin:24px 0;">
+              <a href="{{url}}" style="background:#2563eb;color:#ffffff;padding:12px 20px;border-radius:6px;text-decoration:none;font-weight:600;display:inline-block;">
+                {{label}}
+              </a>
+            </p>
+          {{/each}}
+          {{#each outro}}
+            <p style="margin:0 0 16px 0;font-size:15px;line-height:22px;color:#111827;">{{this}}</p>
+          {{/each}}
+        </td>
+      </tr>
+      {{> footer}}
+    </table>
+  </body>
+</html>
