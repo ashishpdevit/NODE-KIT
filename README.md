@@ -1,17 +1,23 @@
 # Node Starter Kit
 
-A lean TypeScript starter kit for building Express APIs. It now ships with a Prisma-backed SQLite database, modular route/controller/service layers, and ready-to-use CRUD endpoints seeded from the provided mock datasets.
+A comprehensive TypeScript starter kit for building Express APIs with advanced features. It ships with a Prisma-backed database, modular route/controller/service layers, ready-to-use CRUD endpoints, **comprehensive admin dashboard APIs**, **advanced pagination with search and sorting**, and notification systems seeded from provided mock datasets.
 
 ## Features
 
-- Express + TypeScript application skeleton with production-ready middleware (`helmet`, `cors`, `compression`).
-- Environment management powered by `dotenv` and validated with `zod`.
-- Prisma ORM with SQLite (swap the datasource to Postgres/MySQL when ready).
-- Modular domain packages grouped under `modules/admin`, `modules/app`, and `modules/shared`, each exposing controllers, services, validations, and routers.
-- Seed script that hydrates the database using the original mock JSON files.
-- Jest + Supertest integration tests that run the Prisma migrations and seed automatically.
-- Logger utilities, consistent JSON responses, graceful shutdown, and path-alias aware dev tooling (`ts-node` + `tsconfig-paths`).
-- Unified notification center that persists records, emails users, and fans out Firebase Cloud Messaging pushes.
+- **Express + TypeScript** application skeleton with production-ready middleware (`helmet`, `cors`, `compression`).
+- **Environment management** powered by `dotenv` and validated with `zod`.
+- **Prisma ORM** with SQLite (swap the datasource to Postgres/MySQL when ready).
+- **Modular architecture** with domain packages grouped under `modules/admin`, `modules/app`, and `modules/shared`.
+- **Comprehensive Admin Dashboard APIs** with statistics, charts data, and business insights.
+- **Advanced Pagination System** with Laravel-style responses, search, and sorting capabilities.
+- **Multi-field Search** with configurable search fields across all listing endpoints.
+- **Dynamic Sorting** with field validation and direction control.
+- **Seed script** that hydrates the database using the original mock JSON files.
+- **Jest + Supertest** integration tests that run the Prisma migrations and seed automatically.
+- **Logger utilities**, consistent JSON responses, graceful shutdown, and path-alias aware dev tooling.
+- **Unified notification center** that persists records, emails users, and fans out Firebase Cloud Messaging pushes.
+- **RBAC System** with roles, permissions, and assignments management.
+- **Mobile App Authentication** with JWT tokens, device management, and password reset flows.
 
 ## Getting Started
 
@@ -30,14 +36,14 @@ npm run db:seed          # populate the database from mocks
 
 ### Available Scripts
 
-- `npm run dev` � start the development server with hot reload (`nodemon` + `ts-node` + path aliases).
-- `npm run build` � compile TypeScript into the `dist` directory.
-- `npm start` � run the compiled JavaScript from the `dist` folder.
-- `npm test` � execute the Jest suite (runs migrations + seed before the tests).
-- `npm run prisma:migrate` � run `prisma migrate dev` (create/apply local migrations).
-- `npm run prisma:deploy` � run `prisma migrate deploy` (apply committed migrations).
-- `npm run prisma:generate` � regenerate the Prisma client.
-- `npm run db:seed` � seed the database using `prisma/seed.ts`.
+- `npm run dev` � start the development server with hot reload (`nodemon` + `ts-node` + path aliases).
+- `npm run build` � compile TypeScript into the `dist` directory.
+- `npm start` � run the compiled JavaScript from the `dist` folder.
+- `npm test` � execute the Jest suite (runs migrations + seed before the tests).
+- `npm run prisma:migrate` � run `prisma migrate dev` (create/apply local migrations).
+- `npm run prisma:deploy` � run `prisma migrate deploy` (apply committed migrations).
+- `npm run prisma:generate` � regenerate the Prisma client.
+- `npm run db:seed` � seed the database using `prisma/seed.ts`.
 
 ## Environment Variables
 
@@ -117,9 +123,16 @@ src/
     lib/               Shared libraries (Prisma client, mailer, push client, etc.)
     services/          Cross-cutting orchestration (notification center)
     middlewares/       Global middleware (auth, error handler, logger)
-    utils/             Cross-cutting helpers (logger, responses, security)
+    utils/             Cross-cutting helpers (logger, responses, security, **pagination**)
   modules/             Domain-focused feature modules
     admin/             Admin panel features
+      dashboard/       **Admin Dashboard APIs** with statistics and pagination
+        dashboard.service.ts    Business logic for dashboard data
+        dashboard.controller.ts HTTP request handlers
+        dashboard.router.ts     Route definitions
+        dashboard.validation.ts Input validation schemas
+        README.md              Dashboard API documentation
+        RESPONSE_EXAMPLE.md    Response format examples
       users/           Admin user management
       menuLinks/       Admin navigation links
       settings/        Shared settings bundles
@@ -151,6 +164,9 @@ prisma/
   migrations/          Migration history (generated by Prisma)
   seed.ts              Seeder that hydrates the DB from ./mocks
 mocks/                 Original JSON fixtures (source of truth for seeding)
+postman/               **Postman API Collection**
+  Node-Starter-Kit.postman_collection.json  Complete API collection with examples
+  dashboard-requests.json                   Dashboard-specific API requests
 tests/
   jest.setup.ts        Applies migrations + seed before tests run
   app.test.ts          Integration tests covering key modules
@@ -158,27 +174,40 @@ tests/
 
 ## API Modules
 
-All feature modules expose full CRUD endpoints backed by Prisma. Examples (prefixed with `/api`):
+### Core API Endpoints
 
-| Endpoint                      | Description                                  |
-| ----------------------------- | -------------------------------------------- |
-| `/admins`                     | Manage administrative users                  |
-| `/customers`                  | Customer directory with status/country filters |
-| `/orders`                     | Order ledger (auto-generates `ORD-###` IDs)  |
-| `/products`                   | Product catalogue with variants/tags metadata |
-| `/app-settings`               | Mobile app release + maintenance settings    |
-| `/app-menu-links`             | Legal/support content per audience           |
-| `/app/auth`                   | Mobile app authentication + profile endpoints |
-| `/contact-requests`           | Contact form submissions (filterable by date) |
-| `/faqs`                       | Localised FAQ entries (question/answer JSON) |
-| `/languages`                  | Supported locales                            |
-| `/rbac` + sub-routes          | Modules, permissions, roles, assignments snapshot + management |
+All feature modules expose full CRUD endpoints backed by Prisma with advanced pagination, search, and sorting:
 
-Each controller returns the shared `{ success, message, data }` payload, and errors are normalised through `handlePrismaError`.
+| Endpoint                      | Description                                  | Pagination |
+| ----------------------------- | -------------------------------------------- | ---------- |
+| `/api/admin/dashboard`        | **Admin Dashboard APIs** with statistics and insights | ✅ |
+| `/api/admin/users`            | Manage administrative users                  | ✅ |
+| `/api/admin/customers`        | Customer directory with advanced filtering   | ✅ |
+| `/api/admin/orders`           | Order ledger (auto-generates `ORD-###` IDs)  | ✅ |
+| `/api/admin/products`         | Product catalogue with variants/tags metadata | ✅ |
+| `/api/admin/contact-requests` | Contact form submissions with search/sort    | ✅ |
+| `/api/admin/notifications`    | Notification management and delivery         | ✅ |
+| `/api/admin/settings/app`     | Mobile app release + maintenance settings    | ❌ |
+| `/api/admin/settings/languages` | Supported locales management               | ❌ |
+| `/api/admin/menu-links`       | Legal/support content per audience           | ❌ |
+| `/api/admin/faqs`             | Localized FAQ entries (question/answer JSON) | ❌ |
+| `/api/app/auth`               | Mobile app authentication + profile endpoints | ❌ |
+| `/api/app/products`           | Public product catalogue                     | ❌ |
+| `/api/app/customers`          | Customer management for app users            | ❌ |
+| `/api/app/orders`             | Order management for app users               | ❌ |
+| `/api/app/contact-requests`   | Contact form submissions                     | ❌ |
+| `/api/app/faqs`               | Public FAQ content                           | ❌ |
+| `/api/rbac` + sub-routes      | RBAC system: modules, permissions, roles, assignments | ❌ |
+
+### Response Format
+
+- **Success responses**: `{ status: true, message: string, data: any }`
+- **Paginated responses**: Laravel-style pagination with `data`, `links`, and `meta` objects
+- **Error responses**: Normalized through `handlePrismaError` with consistent structure
 
 ## Mobile App Auth
 
-All `/api/app/auth` endpoints require the `x-api-key` header (or `api_key` query parameter) to match `APP_API_KEY`. Authentication responses return `{ token, user }`, where `token` is a JWT signed with `APP_JWT_SECRET` and `user` contains non-sensitive profile fields. Register/login payloads accept optional `device_token` + `notifications_enabled` flags so the API can manage Firebase push targets, and `/logout` clears the token server-side. Requests may also send `locale` to capture the user�s preferred language for localized notifications.
+All `/api/app/auth` endpoints require the `x-api-key` header (or `api_key` query parameter) to match `APP_API_KEY`. Authentication responses return `{ token, user }`, where `token` is a JWT signed with `APP_JWT_SECRET` and `user` contains non-sensitive profile fields. Register/login payloads accept optional `device_token` + `notifications_enabled` flags so the API can manage Firebase push targets, and `/logout` clears the token server-side. Requests may also send `locale` to capture the user�s preferred language for localized notifications.
 
 | Method & Path                 | Description                               |
 | ----------------------------- | ----------------------------------------- |
@@ -207,7 +236,160 @@ Key admin routes include:
 | `PUT /api/admin/contact-requests/:id` | Record replies to contact requests |
 | `GET /api/admin/settings/app` | Inspect mobile release settings |
 
+## Admin Dashboard APIs
+
+The admin dashboard provides comprehensive business intelligence and management capabilities through a suite of powerful APIs:
+
+### Dashboard Overview
+- **`GET /api/admin/dashboard/overview`** - Complete dashboard data in a single request
+- **`GET /api/admin/dashboard/stats`** - Basic statistics (customers, orders, revenue)
+
+### Chart Data APIs
+- **`GET /api/admin/dashboard/orders/status-counts`** - Order status distribution for pie charts
+- **`GET /api/admin/dashboard/revenue/monthly`** - Monthly revenue trends for line charts  
+- **`GET /api/admin/dashboard/products/category-stats`** - Product category breakdown for bar charts
+
+### Paginated Listings (with Search & Sort)
+All listing endpoints support advanced pagination with Laravel-style responses:
+
+- **`GET /api/admin/dashboard/customers`** - Paginated customers with search/sort
+- **`GET /api/admin/dashboard/orders`** - Paginated orders with search/sort
+- **`GET /api/admin/dashboard/products`** - Paginated products with search/sort
+- **`GET /api/admin/dashboard/contact-requests`** - Paginated contact requests with search/sort
+- **`GET /api/admin/dashboard/activities/recent`** - Paginated recent activities feed
+
+### Business Intelligence
+- **`GET /api/admin/dashboard/customers/top`** - Top customers by order count
+- **`GET /api/admin/dashboard/products/low-inventory`** - Low stock alerts
+
+### Query Parameters for Pagination
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `page` | number | 1 | Page number |
+| `per_page` | number | 10 | Items per page (max: 100) |
+| `sortBy` | string | - | Field to sort by |
+| `sortOrder` | string | - | Sort direction (`asc` or `desc`) |
+| `search` | string | - | Search query |
+| `searchFields` | string | - | Comma-separated fields to search |
+
+### Laravel-Style Pagination Response
+
+```json
+{
+  "status": true,
+  "message": "Data fetched successfully",
+  "data": [...],
+  "links": {
+    "first": "https://domain.com/api/admin/dashboard/customers?page=1&per_page=20",
+    "last": "https://domain.com/api/admin/dashboard/customers?page=5&per_page=20",
+    "prev": "https://domain.com/api/admin/dashboard/customers?page=1&per_page=20",
+    "next": "https://domain.com/api/admin/dashboard/customers?page=3&per_page=20"
+  },
+  "meta": {
+    "current_page": 2,
+    "from": 21,
+    "last_page": 5,
+    "links": [...],
+    "path": "https://domain.com/api/admin/dashboard/customers",
+    "per_page": 20,
+    "to": 40,
+    "total": 95
+  }
+}
+```
+
+## Advanced Pagination System
+
+The starter kit includes a comprehensive pagination system inspired by Laravel's pagination with advanced features:
+
+### Features
+- **Laravel-style Response Format** - Complete pagination metadata with navigation links
+- **Multi-field Search** - Search across multiple database fields with configurable search targets
+- **Dynamic Sorting** - Sort by any allowed field with validation
+- **Smart URL Generation** - Preserves all query parameters in navigation links
+- **Performance Optimized** - Parallel queries for data and count with efficient database queries
+
+### Pagination Utilities
+
+The system includes reusable pagination utilities in `src/core/utils/pagination.ts`:
+
+- **`parseListQueryParams()`** - Parse pagination, sort, and search parameters
+- **`createPaginatedResponse()`** - Generate Laravel-style paginated responses
+- **`calculatePaginationMeta()`** - Calculate complete pagination metadata
+- **Type-safe interfaces** - Full TypeScript support with proper type definitions
+
+### Usage Example
+
+```typescript
+// In your controller
+const { pagination, sort, search } = parseListQueryParams(
+  req,
+  ["createdAt", "name", "email"], // allowed sort fields
+  ["name", "email", "company"]    // default search fields
+);
+
+const result = await service.listPaginated({
+  pagination,
+  sort,
+  search,
+  filters: { status: "active" }
+});
+
+res.json({
+  status: true,
+  message: "Data fetched successfully",
+  ...result
+});
+```
+
+### Frontend Integration
+
+The pagination system is designed for easy frontend integration:
+
+```javascript
+// Fetch paginated data
+const response = await fetch('/api/admin/dashboard/customers?page=2&per_page=20&sortBy=name&sortOrder=asc&search=company');
+const data = await response.json();
+
+// Use pagination metadata
+const { data: customers, links, meta } = data;
+const { current_page, last_page, total, per_page } = meta;
+
+// Build pagination UI using links.first, links.prev, links.next, links.last
+// and meta.links array for page numbers
+```
+
 App-facing endpoints are namespaced under `/api/app` and are read-only for catalogue/FAQ resources.
+
+## Postman API Collection
+
+The starter kit includes a comprehensive Postman collection for testing and development:
+
+### Collection Files
+- **`postman/Node-Starter-Kit.postman_collection.json`** - Complete API collection with all endpoints
+- **`postman/dashboard-requests.json`** - Dashboard-specific API requests with pagination examples
+
+### Collection Features
+- **Complete API Coverage** - All admin and app endpoints with examples
+- **Authentication Examples** - Admin and app authentication flows
+- **Pagination Examples** - All paginated endpoints with query parameters
+- **Dashboard APIs** - Complete dashboard endpoint collection
+- **Environment Variables** - Pre-configured variables for easy testing
+- **Request Examples** - Realistic payload examples for all endpoints
+
+### Environment Variables
+The collection includes pre-configured environment variables:
+- `baseUrl` - API base URL (default: http://localhost:3000)
+- `apiKey` - App API key for authentication
+- `adminEmail` / `adminPassword` - Admin credentials
+- `adminToken` / `appAuthToken` - JWT tokens for authenticated requests
+
+### Usage
+1. Import the collection into Postman
+2. Set up environment variables
+3. Run the authentication requests to get tokens
+4. Test all endpoints with proper authentication headers
 
 
 
@@ -231,3 +413,25 @@ npm start
 ```
 
 Swap the Prisma datasource to your production database, run `npm run prisma:deploy` during release, and execute the seed (or your own seed script) as needed.
+
+## Quick Start with New Features
+
+### Dashboard APIs
+1. **Start the server**: `npm run dev`
+2. **Import Postman collection**: Use `postman/Node-Starter-Kit.postman_collection.json`
+3. **Authenticate**: Use admin login to get JWT token
+4. **Test Dashboard APIs**:
+   - Get dashboard overview: `GET /api/admin/dashboard/overview`
+   - Get paginated customers: `GET /api/admin/dashboard/customers?page=1&per_page=10`
+   - Search and sort: `GET /api/admin/dashboard/orders?page=1&sortBy=total&sortOrder=desc&search=pending`
+
+### Advanced Pagination
+- All listing endpoints now support Laravel-style pagination
+- Use query parameters: `page`, `per_page`, `sortBy`, `sortOrder`, `search`
+- Response includes complete navigation metadata and links
+
+### Business Intelligence
+- Dashboard provides comprehensive business insights
+- Chart data for visualizations (revenue, orders, products)
+- Top customers and low inventory alerts
+- Recent activities feed with pagination

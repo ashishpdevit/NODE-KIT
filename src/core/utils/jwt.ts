@@ -36,7 +36,7 @@ export const verifyAppJwt = (token: string): AppJwtPayload => {
 
 export const signAdminJwt = (payload: AdminJwtPayload, options?: SignOptions) => {
   const signOptions: SignOptions = {
-    expiresIn: adminAuthConfig.jwtExpiresIn as SignOptions["expiresIn"],
+    // expiresIn: adminAuthConfig.jwtExpiresIn as SignOptions["expiresIn"],
     ...options,
   };
 

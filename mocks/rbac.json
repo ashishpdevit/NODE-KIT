@@ -261,7 +261,7 @@
                         },
                         {
                             "id":  "assign-demo-support",
-                            "subjectId":  "support@example.com",
+                            "subjectId":  "admin@mailinator.com",
                             "subjectType":  "user",
                             "roleId":  "support"
                         }

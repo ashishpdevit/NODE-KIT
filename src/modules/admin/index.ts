@@ -7,3 +7,5 @@ export { adminFaqRouter } from "./faqs/faq.router";
 export { adminContactRequestRouter } from "./contactRequests/contactRequest.router";
 export { adminNotificationRouter } from "./notifications/notification.router";
 export { adminProductRouter } from "./products/product.router";
+export { adminOrderRouter } from "./orders/order.router";
+export { dashboardRouter } from "./dashboard/dashboard.router";

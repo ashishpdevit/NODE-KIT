@@ -7,9 +7,11 @@ import {
   adminContactRequestRouter,
   adminFaqRouter,
   adminNotificationRouter,
+  adminOrderRouter,
   adminProductRouter,
   appMenuLinkRouter,
   appSettingRouter,
+  dashboardRouter,
   languageRouter,
 } from "@/modules/admin";
 
@@ -19,6 +21,7 @@ adminRoutes.use("/auth", adminAuthRouter);
 
 adminRoutes.use(adminAuth);
 
+adminRoutes.use("/dashboard", dashboardRouter);
 adminRoutes.use("/users", adminRouter);
 adminRoutes.use("/menu-links", appMenuLinkRouter);
 adminRoutes.use("/settings/app", appSettingRouter);
@@ -27,3 +30,4 @@ adminRoutes.use("/faqs", adminFaqRouter);
 adminRoutes.use("/contact-requests", adminContactRequestRouter);
 adminRoutes.use("/notifications", adminNotificationRouter);
 adminRoutes.use("/products", adminProductRouter);
+adminRoutes.use("/orders", adminOrderRouter);

@@ -1,6 +1,13 @@
 import type { Prisma } from "@prisma/client";
 
 import { prisma } from "@/core/lib/prisma";
+import type { 
+  PaginationOptions, 
+  SortOptions, 
+  SearchOptions, 
+  PaginatedResult 
+} from "@/core/utils/pagination";
+import { createPaginatedResponse } from "@/core/utils/pagination";
 
 type ProductFilters = { status?: string; category?: string; tag?: string };
 
@@ -86,6 +93,94 @@ export const productService = {
     return mapped.filter(
       (product) =>
         Array.isArray(product.tags) && product.tags.some((item) => item.toLowerCase() === tag)
+    );
+  },
+
+  listPaginated: async (options: {
+    pagination: PaginationOptions;
+    sort?: SortOptions | null;
+    search?: SearchOptions | null;
+    filters: ProductFilters;
+  }): Promise<PaginatedResult<any>> => {
+    const { pagination, sort, search, filters } = options;
+
+    // Build where clause
+    const where: Prisma.ProductWhereInput = {};
+
+    // Apply filters
+    if (filters.status) {
+      where.status = filters.status;
+    }
+    if (filters.category) {
+      where.category = filters.category;
+    }
+
+    // Apply search
+    if (search && search.query) {
+      where.OR = [
+        {
+          name: {
+            contains: search.query,
+          },
+        },
+        {
+          sku: {
+            contains: search.query,
+          },
+        },
+        {
+          category: {
+            contains: search.query,
+          },
+        },
+        {
+          brand: {
+            contains: search.query,
+          },
+        },
+      ];
+    }
+
+    // Build orderBy clause
+    const orderBy = sort ? { [sort.field]: sort.direction } : { id: "asc" as const };
+
+    // Execute queries
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        skip: pagination.offset,
+        take: pagination.limit,
+        orderBy,
+        select: baseSelect,
+      }),
+      prisma.product.count({ where }),
+    ]);
+
+    // Map products
+    let mappedProducts = products.map(mapProduct);
+
+    // Apply tag filter after mapping (since tags are JSON)
+    if (filters.tag) {
+      const tag = filters.tag.toLowerCase();
+      mappedProducts = mappedProducts.filter(
+        (product) =>
+          Array.isArray(product.tags) && product.tags.some((item) => item.toLowerCase() === tag)
+      );
+    }
+
+    return createPaginatedResponse(
+      mappedProducts,
+      total,
+      pagination,
+      '/api/admin/products',
+      { 
+        ...(sort?.field && { sortBy: sort.field }), 
+        ...(sort?.direction && { sortOrder: sort.direction }), 
+        ...(search?.query && { search: search.query }),
+        ...(filters.status && { status: filters.status }),
+        ...(filters.category && { category: filters.category }),
+        ...(filters.tag && { tag: filters.tag })
+      }
     );
   },
   get: async (id: number) => {

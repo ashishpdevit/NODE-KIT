@@ -3,6 +3,7 @@ import type { Request, Response } from "express";
 import { toError, toSuccess } from "@/core/utils/httpResponse";
 import { handlePrismaError } from "@/core/utils/prismaError";
 import { parseNumericParam } from "@/core/utils/requestHelpers";
+import { parseListQueryParams } from "@/core/utils/pagination";
 
 import { productService } from "@/modules/app/products/product.service";
 import { productCreateSchema, productUpdateSchema } from "@/modules/app/products/product.validation";
@@ -25,12 +26,34 @@ const buildUpdatePayload = (data: Record<string, unknown>) => {
 };
 
 export const listProducts = async (req: Request, res: Response) => {
-  const status = typeof req.query.status === "string" ? req.query.status : undefined;
-  const category = typeof req.query.category === "string" ? req.query.category : undefined;
-  const tag = typeof req.query.tag === "string" ? req.query.tag : undefined;
+  try {
+    const { pagination, sort, search } = parseListQueryParams(
+      req,
+      ["createdAt", "updatedAt", "name", "price", "inventory", "category", "status"],
+      ["name", "sku", "category", "brand"]
+    );
 
-  const products = await productService.list({ status, category, tag });
-  res.json(toSuccess("Products fetched", products));
+    // Additional filters
+    const status = typeof req.query.status === "string" ? req.query.status : undefined;
+    const category = typeof req.query.category === "string" ? req.query.category : undefined;
+    const tag = typeof req.query.tag === "string" ? req.query.tag : undefined;
+
+    const result = await productService.listPaginated({
+      pagination,
+      sort,
+      search,
+      filters: { status, category, tag },
+    });
+
+    res.json({
+      status: true,
+      message: "Products fetched successfully",
+      ...result,
+    });
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    res.status(500).json(toError("Failed to fetch products"));
+  }
 };
 
 export const getProduct = async (req: Request, res: Response) => {
