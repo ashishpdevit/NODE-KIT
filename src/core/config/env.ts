@@ -22,6 +22,12 @@ export const envSchema = z.object({
     .min(32, "ADMIN_JWT_SECRET must be at least 32 characters")
     .default("change-me-admin-jwt-secret-change-me"),
   ADMIN_JWT_EXPIRES_IN: z.string().default("30m"),
+  ADMIN_PASSWORD_RESET_TOKEN_TTL_MINUTES: z
+    .coerce.number()
+    .int()
+    .positive()
+    .default(30),
+  ADMIN_PANEL_URL: z.string().url().optional(),
   APP_PASSWORD_RESET_TOKEN_TTL_MINUTES: z
     .coerce.number()
     .int()

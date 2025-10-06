@@ -37,6 +37,9 @@ MAIL_FROM=no-reply@node-kit.local
 # FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@your-project.iam.gserviceaccount.com
 # FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_PRIVATE_KEY_HERE\n-----END PRIVATE KEY-----\n"
 
+# Admin Panel Configuration (optional - for admin password reset links)
+# ADMIN_PANEL_URL=https://admin.yourdomain.com
+
 # Queue Configuration (optional - uses in-memory queues if not configured)
 # REDIS_HOST=localhost
 # REDIS_PORT=6379
@@ -102,6 +105,15 @@ PUSH_QUEUE_REMOVE_ON_FAIL=50
 EMAIL_QUEUE_ATTEMPTS=3
 PUSH_QUEUE_ATTEMPTS=3
 ```
+
+### Admin Panel Configuration
+
+```bash
+# Admin panel URL for password reset links
+ADMIN_PANEL_URL=https://admin.yourdomain.com
+```
+
+**Note**: If `ADMIN_PANEL_URL` is not set, it defaults to `http://localhost:3000`. This URL is used to generate clickable reset links in admin password reset emails.
 
 ## Local Development Setup
 

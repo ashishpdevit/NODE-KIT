@@ -21,4 +21,15 @@ export const adminLoginSchema = adminLoginBaseSchema.transform(
   }),
 );
 
+export const adminForgotPasswordSchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+});
+
+export const adminResetPasswordSchema = z.object({
+  token: z.string().min(1, "Reset token is required"),
+  password: z.string().min(8, "Password must be at least 8 characters long"),
+});
+
 export type AdminLoginInput = z.infer<typeof adminLoginSchema>;
+export type AdminForgotPasswordInput = z.infer<typeof adminForgotPasswordSchema>;
+export type AdminResetPasswordInput = z.infer<typeof adminResetPasswordSchema>;

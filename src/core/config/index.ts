@@ -17,6 +17,8 @@ export const authConfig = {
 export const adminAuthConfig = {
   jwtSecret: env.ADMIN_JWT_SECRET,
   jwtExpiresIn: env.ADMIN_JWT_EXPIRES_IN,
+  resetTokenTtlMinutes: env.ADMIN_PASSWORD_RESET_TOKEN_TTL_MINUTES,
+  panelUrl: env.ADMIN_PANEL_URL,
 };
 
 export const mailConfig = {

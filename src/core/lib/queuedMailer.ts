@@ -1,6 +1,6 @@
 import type { SendMailOptions, Transporter } from "nodemailer";
 
-import { appConfig, mailConfig } from "@/core/config";
+import { appConfig, mailConfig, adminAuthConfig } from "@/core/config";
 import { logger } from "@/core/utils/logger";
 import { emailQueueService, type EmailJobData } from "@/core/services/emailQueue";
 
@@ -145,6 +145,61 @@ export const queuedMailer = {
       userId,
       notificationId: "welcome",
       source: "auth",
+    });
+  },
+
+  /**
+   * Queue an admin password reset email
+   */
+  async sendAdminPasswordResetEmail(email: string, adminName: string, token: string, expiresAt: Date, adminId?: number) {
+    const expiresAtFormatted = expiresAt.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZoneName: 'short'
+    });
+
+    const greeting = adminName ? `Hello ${adminName},` : "Hello Admin,";
+    
+    // Create reset link - you can customize this URL based on your admin panel setup
+    const resetLink = `${adminAuthConfig.panelUrl || 'http://localhost:3000'}/admin/reset-password?token=${token}`;
+
+    return this.sendQueued({
+      to: email,
+      subject: `${appConfig.name} - Admin Password Reset Request`,
+      // Plain text fallback
+      text: `Admin Password Reset Request\n\n${greeting}\n\nClick the following link to reset your admin password: ${resetLink}\n\nOr use this reset code: ${token}\n\nThis link expires on ${expiresAtFormatted}.\n\nThis is an administrative password reset request. If you didn't request this reset, please contact your system administrator immediately.`,
+    }, {
+      id: "admin-password-reset",
+      locale: "en",
+      context: {
+        greeting: greeting,
+        intro: [
+          `We received a request to reset the admin password for your ${appConfig.name} administrator account.`,
+          `To complete the password reset process, please click the button below or use the reset link provided.`
+        ],
+        resetToken: token,
+        resetLink: resetLink,
+        expiresAt: expiresAtFormatted,
+        ctas: [
+          {
+            label: "Reset Admin Password",
+            url: resetLink
+          }
+        ],
+        outro: [
+          `This is an administrative password reset request. If you didn't initiate this reset, your account may be compromised.`,
+          `Please contact your system administrator immediately if you did not request this password reset.`,
+          `If the button doesn't work, copy and paste this link into your browser: ${resetLink}`
+        ],
+        footerNote: `Admin password resets require immediate attention. Contact support if you have any concerns.`
+      }
+    }, {
+      userId: adminId,
+      notificationId: "admin_password_reset",
+      source: "admin_auth",
     });
   },
 

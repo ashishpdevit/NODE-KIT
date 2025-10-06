@@ -4,9 +4,11 @@ import { toError, toSuccess } from "@/core/utils/httpResponse";
 import { handlePrismaError } from "@/core/utils/prismaError";
 import { verifyPassword } from "@/core/utils/security";
 import { signAdminJwt } from "@/core/utils/jwt";
+import { logger } from "@/core/utils/logger";
+import { queuedMailer } from "@/core/lib/queuedMailer";
 
 import { adminAuthService, type AdminSafe } from "./auth.service";
-import { adminLoginSchema } from "./auth.validation";
+import { adminLoginSchema, adminForgotPasswordSchema, adminResetPasswordSchema } from "./auth.validation";
 
 const buildAuthPayload = (admin: AdminSafe) => ({
   token: signAdminJwt({
@@ -73,6 +75,67 @@ export const updateAdminPassword = async (req: Request, res: Response) => {
     const updated = await adminAuthService.updatePassword(admin.id, password);
     res.locals.admin = updated;
     return res.json(toSuccess("Password updated", buildAuthPayload(updated)));
+  } catch (error) {
+    return handlePrismaError(res, error);
+  }
+};
+
+export const forgotAdminPassword = async (req: Request, res: Response) => {
+  const parsed = adminForgotPasswordSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json(toError("Invalid payload", parsed.error.flatten()));
+  }
+
+  const admin = await adminAuthService.findByEmail(parsed.data.email);
+  if (!admin) {
+    return res.json(
+      toSuccess("If an admin account exists for this email, a reset link has been generated", {
+        resetToken: null,
+      })
+    );
+  }
+
+  try {
+    const { token, expiresAt } = await adminAuthService.issuePasswordResetToken(admin.id);
+
+    if (queuedMailer.isEnabled) {
+      try {
+        await queuedMailer.sendAdminPasswordResetEmail(admin.email, admin.name, token, expiresAt, admin.id);
+      } catch (error) {
+        logger.error("Failed to queue admin password reset email", error);
+      }
+    }
+
+    return res.json(
+      toSuccess("Password reset token generated", {
+        resetToken: token,
+        expiresAt,
+      })
+    );
+  } catch (error) {
+    return handlePrismaError(res, error);
+  }
+};
+
+export const resetAdminPassword = async (req: Request, res: Response) => {
+  const parsed = adminResetPasswordSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json(toError("Invalid payload", parsed.error.flatten()));
+  }
+
+  try {
+    const resetToken = await adminAuthService.verifyPasswordResetToken(parsed.data.token);
+    if (!resetToken) {
+      return res.status(400).json(toError("Invalid or expired reset token"));
+    }
+
+    const updatedAdmin = await adminAuthService.resetPasswordWithToken(
+      resetToken.admin.id,
+      parsed.data.password,
+      resetToken.id
+    );
+
+    return res.json(toSuccess("Password reset successful", buildAuthPayload(updatedAdmin)));
   } catch (error) {
     return handlePrismaError(res, error);
   }
