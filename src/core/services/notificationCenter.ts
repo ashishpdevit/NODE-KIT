@@ -5,6 +5,8 @@ import { pushClient, type PushDispatchResult } from "@/core/lib/pushClient";
 import { prisma } from "@/core/lib/prisma";
 import { renderEmailTemplate } from "@/core/templates/email";
 import { logger } from "@/core/utils/logger";
+import { emailQueueService, type EmailJobData } from "./emailQueue";
+import { pushQueueService, type PushJobData } from "./pushQueue";
 
 type PushRecipient = string | string[];
 
@@ -85,6 +87,11 @@ type NotificationDispatchOptions = {
     imageUrl?: string;
   };
   defaultPushTokens?: PushRecipient;
+  useQueue?: boolean;
+  queueOptions?: {
+    delay?: number;
+    priority?: number;
+  };
 };
 
 type NotificationDispatchSummary = {
@@ -101,6 +108,10 @@ type NotificationDispatchSummary = {
   };
   email?: EmailDispatchResult;
   push?: PushDispatchResultSummary;
+  queued?: {
+    emailJobId?: string;
+    pushJobId?: string;
+  };
 };
 
 type ResolvedLocalization = {
@@ -396,6 +407,12 @@ export const notificationCenter = {
 
     const localization = resolveLocalization(options);
 
+    // Use queues if requested
+    if (options.useQueue) {
+      return this.dispatchQueued(options, localization);
+    }
+
+    // Original synchronous dispatch
     const emailResult = await dispatchEmail(options, localization);
     const pushResult = await dispatchPush(options, localization);
 
@@ -417,6 +434,101 @@ export const notificationCenter = {
     return summary;
   },
 
+  async dispatchQueued(options: NotificationDispatchOptions, localization?: ResolvedLocalization): Promise<NotificationDispatchSummary> {
+    const summary: NotificationDispatchSummary = {};
+    const resolvedLocalization = localization || resolveLocalization(options);
+
+    // Prepare queue options
+    const queueOptions = options.queueOptions || {};
+
+    // Queue email job if email options are provided
+    if (options.email || resolvedLocalization.email) {
+      const emailOptions = resolvedLocalization.email ?? options.email;
+      if (emailOptions && mailer.isEnabled) {
+        try {
+          const emailJobData: EmailJobData = {
+            payload: {
+              ...emailOptions,
+              subject: emailOptions.subject ?? resolvedLocalization.title,
+              text: emailOptions.text ?? resolvedLocalization.message,
+            },
+            template: emailOptions.template,
+            metadata: {
+              userId: typeof options.notifiableId === "number" ? options.notifiableId : undefined,
+              notificationId: options.notificationType,
+              source: "notification_center",
+            },
+          };
+
+          const emailJob = await emailQueueService.addEmailJob(emailJobData, queueOptions);
+          summary.queued = { ...summary.queued, emailJobId: String(emailJob.id) };
+
+          logger.debug("Email queued for dispatch", {
+            jobId: emailJob.id,
+            to: emailJobData.payload.to,
+            subject: emailJobData.payload.subject,
+            userId: options.notifiableId,
+          });
+        } catch (error) {
+          logger.error("Failed to queue email", error);
+        }
+      }
+    }
+
+    // Queue push notification job if push options are provided
+    const tokens = resolvePushTokens(options);
+    if (tokens && (Array.isArray(tokens) ? tokens.length > 0 : true)) {
+      try {
+        const localizedPush = resolvedLocalization.push ?? {};
+        
+        const pushJobData: PushJobData = {
+          payload: {
+            ...(options.push?.data ? { data: options.push.data } : {}),
+            ...(localizedPush.data ? { data: { ...options.push?.data, ...localizedPush.data } } : {}),
+            ...(options.push?.imageUrl ? { imageUrl: options.push.imageUrl } : {}),
+            ...(localizedPush.imageUrl ? { imageUrl: localizedPush.imageUrl } : {}),
+            tokens,
+            title: localizedPush.title ?? options.push?.title ?? resolvedLocalization.title,
+            body: localizedPush.body ?? options.push?.body ?? resolvedLocalization.message,
+          },
+          metadata: {
+            userId: typeof options.notifiableId === "number" ? options.notifiableId : undefined,
+            notificationId: options.notificationType,
+            source: "notification_center",
+            userType: options.notifiableType,
+          },
+        };
+
+        const pushJob = await pushQueueService.addPushJob(pushJobData, queueOptions);
+        summary.queued = { ...summary.queued, pushJobId: String(pushJob.id) };
+
+        logger.debug("Push notification queued for dispatch", {
+          jobId: pushJob.id,
+          tokens: Array.isArray(tokens) ? tokens.length : 1,
+          title: pushJobData.payload.title,
+          userId: options.notifiableId,
+        });
+      } catch (error) {
+        logger.error("Failed to queue push notification", error);
+      }
+    }
+
+    // Persist notification if required
+    if (shouldPersistNotification(options)) {
+      try {
+        summary.persisted = await persistNotification(options, resolvedLocalization, {
+          email: undefined, // Will be updated when job completes
+          push: undefined, // Will be updated when job completes
+        });
+      } catch (error) {
+        summary.persisted = undefined;
+        logger.error("Failed to persist notification", error);
+      }
+    }
+
+    return summary;
+  },
+
   async notifyUser(userId: number, options: NotificationDispatchOptions) {
     return this.dispatch({
       ...options,
@@ -425,8 +537,20 @@ export const notificationCenter = {
     });
   },
 
+  async notifyUserQueued(userId: number, options: NotificationDispatchOptions) {
+    return this.dispatchQueued({
+      ...options,
+      notifiableType: options.notifiableType ?? "app_user",
+      notifiableId: options.notifiableId ?? userId,
+    });
+  },
+
   async notifyMany(userIds: number[], options: NotificationDispatchOptions) {
     return Promise.all(userIds.map((userId) => this.notifyUser(userId, options)));
+  },
+
+  async notifyManyQueued(userIds: number[], options: NotificationDispatchOptions) {
+    return Promise.all(userIds.map((userId) => this.notifyUserQueued(userId, options)));
   },
 };
 

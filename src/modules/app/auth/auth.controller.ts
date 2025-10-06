@@ -6,7 +6,7 @@ import { verifyPassword, hashToken } from "@/core/utils/security";
 import { signAppJwt } from "@/core/utils/jwt";
 import { logger } from "@/core/utils/logger";
 import { appConfig } from "@/core/config";
-import { mailer } from "@/core/lib/mailer";
+import { queuedMailer } from "@/core/lib/queuedMailer";
 import { notificationCenter } from "@/core/services/notificationCenter";
 
 import { appAuthService, type AppUserSafe } from "./auth.service";
@@ -46,6 +46,14 @@ export const registerAppUser = async (req: Request, res: Response) => {
       deviceToken,
       notificationsEnabled,
     });
+
+    // if (queuedMailer.isEnabled) {
+    //   try {
+    //     await queuedMailer.sendWelcomeEmail(user.email, user.name ?? 'User', user.id);
+    //   } catch (error) {
+    //     logger.error("Failed to queue welcome email", error);
+    //   }
+    // }
     return res.status(201).json(toSuccess("Registration successful", buildAuthPayload(user)));
   } catch (error) {
     return handlePrismaError(res, error);
@@ -103,16 +111,11 @@ export const forgotAppUserPassword = async (req: Request, res: Response) => {
   try {
     const { token, expiresAt } = await appAuthService.issuePasswordResetToken(user.id);
 
-    if (mailer.isEnabled) {
+    if (queuedMailer.isEnabled) {
       try {
-        await mailer.send({
-          to: user.email,
-          subject: `${appConfig.name} password reset`,
-          text: `Use the following code to reset your password: ${token}`,
-          html: `<p>Use the following code to reset your password:</p><p><strong>${token}</strong></p><p>This code expires at ${expiresAt.toISOString()}.</p>`,
-        });
+        await queuedMailer.sendPasswordResetEmail(user.email, token, expiresAt, user.id);
       } catch (error) {
-        logger.error("Failed to send password reset email", error);
+        logger.error("Failed to queue password reset email", error);
       }
     }
 

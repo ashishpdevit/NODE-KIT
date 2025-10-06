@@ -36,3 +36,5 @@ export const firebaseConfig = {
   clientEmail: env.FIREBASE_CLIENT_EMAIL,
   privateKey: env.FIREBASE_PRIVATE_KEY,
 };
+
+export * from "./queue";

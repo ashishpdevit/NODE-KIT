@@ -37,6 +37,20 @@ export const envSchema = z.object({
   FIREBASE_PROJECT_ID: z.string().min(1).optional().or(z.literal("")),
   FIREBASE_CLIENT_EMAIL: z.string().email().optional().or(z.literal("")),
   FIREBASE_PRIVATE_KEY: z.string().optional().or(z.literal("")),
+  // Queue Configuration
+  REDIS_HOST: z.string().optional(),
+  REDIS_PORT: z.coerce.number().int().positive().optional(),
+  REDIS_PASSWORD: z.string().optional(),
+  REDIS_DB: z.coerce.number().int().min(0).optional(),
+  REDIS_URL: z.string().url().optional(),
+  EMAIL_QUEUE_CONCURRENCY: z.coerce.number().int().positive().optional(),
+  PUSH_QUEUE_CONCURRENCY: z.coerce.number().int().positive().optional(),
+  EMAIL_QUEUE_REMOVE_ON_COMPLETE: z.coerce.number().int().positive().optional(),
+  EMAIL_QUEUE_REMOVE_ON_FAIL: z.coerce.number().int().positive().optional(),
+  PUSH_QUEUE_REMOVE_ON_COMPLETE: z.coerce.number().int().positive().optional(),
+  PUSH_QUEUE_REMOVE_ON_FAIL: z.coerce.number().int().positive().optional(),
+  EMAIL_QUEUE_ATTEMPTS: z.coerce.number().int().positive().optional(),
+  PUSH_QUEUE_ATTEMPTS: z.coerce.number().int().positive().optional(),
 });
 
 export const env = envSchema.parse(process.env);
