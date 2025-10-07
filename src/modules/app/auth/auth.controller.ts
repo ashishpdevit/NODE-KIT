@@ -17,6 +17,7 @@ import {
   registerSchema,
   resetPasswordSchema,
 } from "./auth.validation";
+import { queuedSmsClient } from "@/core/lib/queuedSmsClient";
 
 const buildAuthPayload = (user: AppUserSafe) => ({
   token: signAppJwt({
@@ -262,6 +263,9 @@ export const logoutAppUser = async (_req: Request, res: Response) => {
             ]
           }
         });
+
+        // Send a simple SMS
+        // await queuedSmsClient.sendNotificationSms(user.phone || "", "Hello from your app!", user.id);
 
         logger.info("Logout notification sent successfully", { userId: user.id });
       } catch (error) {

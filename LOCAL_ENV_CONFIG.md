@@ -37,6 +37,20 @@ MAIL_FROM=no-reply@node-kit.local
 # FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@your-project.iam.gserviceaccount.com
 # FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_PRIVATE_KEY_HERE\n-----END PRIVATE KEY-----\n"
 
+# SMS Configuration (optional - defaults to stub mode)
+SMS_PROVIDER=stub
+# SMS_FROM=+1234567890
+
+# Twilio SMS Configuration (only needed if SMS_PROVIDER=twilio)
+# TWILIO_ACCOUNT_SID=your_account_sid
+# TWILIO_AUTH_TOKEN=your_auth_token
+# TWILIO_PHONE_NUMBER=+1234567890
+
+# Vonage SMS Configuration (only needed if SMS_PROVIDER=vonage)
+# VONAGE_API_KEY=your_api_key
+# VONAGE_API_SECRET=your_api_secret
+# VONAGE_FROM=YourBrand
+
 # Admin Panel Configuration (optional - for admin password reset links)
 # ADMIN_PANEL_URL=https://admin.yourdomain.com
 
@@ -50,16 +64,20 @@ MAIL_FROM=no-reply@node-kit.local
 # Queue Performance Tuning (optional)
 # EMAIL_QUEUE_CONCURRENCY=5
 # PUSH_QUEUE_CONCURRENCY=10
+# SMS_QUEUE_CONCURRENCY=5
 
 # Queue Retention Settings (optional)
 # EMAIL_QUEUE_REMOVE_ON_COMPLETE=100
 # EMAIL_QUEUE_REMOVE_ON_FAIL=50
 # PUSH_QUEUE_REMOVE_ON_COMPLETE=100
 # PUSH_QUEUE_REMOVE_ON_FAIL=50
+# SMS_QUEUE_REMOVE_ON_COMPLETE=100
+# SMS_QUEUE_REMOVE_ON_FAIL=50
 
 # Queue Retry Settings (optional)
 # EMAIL_QUEUE_ATTEMPTS=3
 # PUSH_QUEUE_ATTEMPTS=3
+# SMS_QUEUE_ATTEMPTS=3
 ```
 
 ## Queue Configuration Explained
@@ -84,6 +102,7 @@ REDIS_URL=redis://localhost:6379    # Alternative to individual settings
 # Number of concurrent jobs to process
 EMAIL_QUEUE_CONCURRENCY=5    # Default: 5
 PUSH_QUEUE_CONCURRENCY=10    # Default: 10
+SMS_QUEUE_CONCURRENCY=5      # Default: 5
 ```
 
 ### Queue Retention Settings
@@ -92,10 +111,12 @@ PUSH_QUEUE_CONCURRENCY=10    # Default: 10
 # How many completed jobs to keep in memory
 EMAIL_QUEUE_REMOVE_ON_COMPLETE=100
 PUSH_QUEUE_REMOVE_ON_COMPLETE=100
+SMS_QUEUE_REMOVE_ON_COMPLETE=100
 
 # How many failed jobs to keep in memory
 EMAIL_QUEUE_REMOVE_ON_FAIL=50
 PUSH_QUEUE_REMOVE_ON_FAIL=50
+SMS_QUEUE_REMOVE_ON_FAIL=50
 ```
 
 ### Queue Retry Settings
@@ -104,6 +125,7 @@ PUSH_QUEUE_REMOVE_ON_FAIL=50
 # How many times to retry failed jobs
 EMAIL_QUEUE_ATTEMPTS=3
 PUSH_QUEUE_ATTEMPTS=3
+SMS_QUEUE_ATTEMPTS=3
 ```
 
 ### Admin Panel Configuration
@@ -183,7 +205,16 @@ import { queuedPushClient } from "@/core/lib/queuedPushClient";
 await queuedPushClient.sendWelcomePush(["test_device_token"], 123);
 ```
 
-### 4. Test Notification Center Queuing
+### 4. Test SMS Queuing
+
+```typescript
+import { queuedSmsClient } from "@/core/lib/queuedSmsClient";
+
+// This will queue an SMS
+await queuedSmsClient.sendWelcomeSms("+1234567890", "Test User", 123);
+```
+
+### 5. Test Notification Center Queuing
 
 ```typescript
 import { notificationCenter } from "@/core/services/notificationCenter";
@@ -203,6 +234,7 @@ await notificationCenter.notifyUserQueued(123, {
 - **Redis configured**: Uses Redis for queue storage
 - **Email transport**: Uses `json` transport by default (emails logged to console)
 - **Push notifications**: Disabled by default (requires Firebase configuration)
+- **SMS**: Uses `stub` mode by default (SMS logged to console, no real sending)
 
 ## Environment Variable Priority
 

@@ -39,4 +39,19 @@ export const firebaseConfig = {
   privateKey: env.FIREBASE_PRIVATE_KEY,
 };
 
+export const smsConfig = {
+  provider: env.SMS_PROVIDER,
+  from: env.SMS_FROM,
+  twilio: {
+    accountSid: env.TWILIO_ACCOUNT_SID,
+    authToken: env.TWILIO_AUTH_TOKEN,
+    phoneNumber: env.TWILIO_PHONE_NUMBER,
+  },
+  vonage: {
+    apiKey: env.VONAGE_API_KEY,
+    apiSecret: env.VONAGE_API_SECRET,
+    from: env.VONAGE_FROM,
+  },
+};
+
 export * from "./queue";

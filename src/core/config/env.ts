@@ -57,6 +57,22 @@ export const envSchema = z.object({
   PUSH_QUEUE_REMOVE_ON_FAIL: z.coerce.number().int().positive().optional(),
   EMAIL_QUEUE_ATTEMPTS: z.coerce.number().int().positive().optional(),
   PUSH_QUEUE_ATTEMPTS: z.coerce.number().int().positive().optional(),
+  // SMS Configuration
+  SMS_PROVIDER: z.enum(["twilio", "vonage", "stub"]).default("stub"),
+  SMS_FROM: z.string().optional(),
+  // Twilio Configuration
+  TWILIO_ACCOUNT_SID: z.string().optional(),
+  TWILIO_AUTH_TOKEN: z.string().optional(),
+  TWILIO_PHONE_NUMBER: z.string().optional(),
+  // Vonage (Nexmo) Configuration
+  VONAGE_API_KEY: z.string().optional(),
+  VONAGE_API_SECRET: z.string().optional(),
+  VONAGE_FROM: z.string().optional(),
+  // SMS Queue Configuration
+  SMS_QUEUE_CONCURRENCY: z.coerce.number().int().positive().optional(),
+  SMS_QUEUE_REMOVE_ON_COMPLETE: z.coerce.number().int().positive().optional(),
+  SMS_QUEUE_REMOVE_ON_FAIL: z.coerce.number().int().positive().optional(),
+  SMS_QUEUE_ATTEMPTS: z.coerce.number().int().positive().optional(),
 });
 
 export const env = envSchema.parse(process.env);

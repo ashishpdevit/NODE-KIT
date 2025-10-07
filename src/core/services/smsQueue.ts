@@ -1,10 +1,10 @@
 import { Job } from "bull";
-import { pushClient, type PushPayload } from "@/core/lib/pushClient";
+import { smsClient, type SmsPayload } from "@/core/lib/smsClient";
 import { logger } from "@/core/utils/logger";
-import { getPushQueue } from "@/core/lib/queue";
+import { getSmsQueue } from "@/core/lib/queue";
 
-export type PushJobData = {
-  payload: PushPayload;
+export type SmsJobData = {
+  payload: SmsPayload;
   metadata?: {
     userId?: number;
     notificationId?: string;
@@ -13,46 +13,58 @@ export type PushJobData = {
   };
 };
 
-export type PushJobResult = {
+export type SmsJobResult = {
   success: boolean;
   successCount?: number;
   failureCount?: number;
+  messageIds?: string[];
   error?: string;
-  responses?: Array<{
-    messageId?: string | null;
-    error?: string;
-  }>;
 };
 
-const processPushJob = async (job: Job<PushJobData>): Promise<PushJobResult> => {
+const processSmsJob = async (job: Job<SmsJobData>): Promise<SmsJobResult> => {
   const { payload, metadata } = job.data;
   
-  logger.debug("Processing push notification job", {
+  // Validate payload
+  if (!payload || !payload.to || !payload.message) {
+    const error = "SMS payload is missing or invalid - 'to' and 'message' fields are required";
+    logger.error("Invalid SMS job payload", {
+      jobId: job.id,
+      payload,
+      error,
+    });
+    return {
+      success: false,
+      error,
+    };
+  }
+  
+  logger.debug("Processing SMS job", {
     jobId: job.id,
-    tokens: Array.isArray(payload.tokens) ? payload.tokens.length : 1,
-    title: payload.title,
+    to: payload.to,
+    messageLength: payload.message.length,
     userId: metadata?.userId,
     userType: metadata?.userType,
   });
 
   try {
-    const result = await pushClient.send(payload);
+    const result = await smsClient.send(payload);
     
     if (result.ok) {
-      logger.info("Push notification sent successfully", {
+      logger.info("SMS sent successfully", {
         jobId: job.id,
         successCount: result.successCount,
         failureCount: result.failureCount,
+        messageIds: result.messageIds,
         userId: metadata?.userId,
-        userType: metadata?.userType || "user",
+        userType: metadata?.userType,
       });
     } else {
-      logger.warn("Push notification failed or was skipped", {
+      logger.warn("SMS sending failed or was skipped", {
         jobId: job.id,
         skipped: result.skipped,
         error: result.error,
         userId: metadata?.userId,
-        userType: metadata?.userType || "user",
+        userType: metadata?.userType,
       });
     }
 
@@ -60,18 +72,18 @@ const processPushJob = async (job: Job<PushJobData>): Promise<PushJobResult> => 
       success: result.ok,
       successCount: result.successCount,
       failureCount: result.failureCount,
-      error: result.error ? String(result.error) : undefined,
-      responses: result.responses,
+      messageIds: result.messageIds,
+      error: result.error,
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     
-    logger.error("Push notification job failed", {
+    logger.error("SMS job failed", {
       jobId: job.id,
-      tokens: Array.isArray(payload.tokens) ? payload.tokens.length : 1,
+      to: payload.to,
       error: errorMessage,
       userId: metadata?.userId,
-      userType: metadata?.userType || "user",
+      userType: metadata?.userType,
     });
 
     return {
@@ -81,24 +93,24 @@ const processPushJob = async (job: Job<PushJobData>): Promise<PushJobResult> => 
   }
 };
 
-export const pushQueueService = {
+export const smsQueueService = {
   /**
-   * Add a push notification job to the queue
+   * Add an SMS job to the queue
    */
-  async addPushJob(data: PushJobData, options: { delay?: number; priority?: number } = {}) {
-    const queue = getPushQueue();
+  async addSmsJob(data: SmsJobData, options: { delay?: number; priority?: number } = {}) {
+    const queue = getSmsQueue();
     
-    const job = await queue.add("send-push", data, {
+    const job = await queue.add("send-sms", data, {
       delay: options.delay,
       priority: options.priority,
       removeOnComplete: 100,
       removeOnFail: 50,
     });
 
-    logger.debug("Push notification job added to queue", {
+    logger.debug("SMS job added to queue", {
       jobId: job.id,
-      tokens: Array.isArray(data.payload.tokens) ? data.payload.tokens.length : 1,
-      title: data.payload.title,
+      to: data.payload.to,
+      messageLength: data.payload.message.length,
       userId: data.metadata?.userId,
     });
 
@@ -106,46 +118,48 @@ export const pushQueueService = {
   },
 
   /**
-   * Process push notification jobs (called by queue worker)
+   * Process SMS jobs (called by queue worker)
    */
   async processJobs() {
-    const queue = getPushQueue();
+    const queue = getSmsQueue();
     
     // Type assertion for queue.process to handle both Bull Queue and InMemoryQueue
-    (queue as any).process("send-push", 10, async (job: Job<PushJobData>) => {
-      return processPushJob(job);
+    (queue as any).process("send-sms", 5, async (job: Job<SmsJobData>) => {
+      return processSmsJob(job);
     });
 
-    queue.on("completed", (job: Job<PushJobData>, result: PushJobResult) => {
-      logger.debug("Push notification job completed", {
+    queue.on("completed", (job: Job<SmsJobData>, result: SmsJobResult) => {
+      logger.debug("SMS job completed", {
         jobId: job.id,
         success: result.success,
         successCount: result.successCount,
-        failureCount: result.failureCount,
+        messageIds: result.messageIds,
+        to: job.data.payload.to,
         userId: job.data.metadata?.userId,
       });
     });
 
-    queue.on("failed", (job: Job<PushJobData> | undefined, error: Error) => {
-      logger.error("Push notification job failed", {
+    queue.on("failed", (job: Job<SmsJobData> | undefined, error: Error) => {
+      logger.error("SMS job failed", {
         jobId: job?.id,
         error: error.message,
+        to: job?.data.payload.to,
         userId: job?.data.metadata?.userId,
       });
     });
 
     queue.on("stalled", (jobId: string) => {
-      logger.warn("Push notification job stalled", { jobId });
+      logger.warn("SMS job stalled", { jobId });
     });
 
-    logger.info("Push notification queue processor initialized");
+    logger.info("SMS queue processor initialized");
   },
 
   /**
    * Get queue statistics
    */
   async getStats() {
-    const queue = getPushQueue();
+    const queue = getSmsQueue();
     
     if ("getWaiting" in queue && "getActive" in queue && "getCompleted" in queue && "getFailed" in queue) {
       const [waiting, active, completed, failed] = await Promise.all([
@@ -175,12 +189,13 @@ export const pushQueueService = {
    * Clear all jobs from the queue
    */
   async clear() {
-    const queue = getPushQueue();
+    const queue = getSmsQueue();
     
     if ("clean" in queue) {
       await queue.clean(0, "completed");
       await queue.clean(0, "failed");
-      logger.info("Push notification queue cleared");
+      logger.info("SMS queue cleared");
     }
   },
 };
+

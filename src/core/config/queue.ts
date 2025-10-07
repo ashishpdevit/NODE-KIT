@@ -35,6 +35,18 @@ export const queueConfig = {
         delay: 2000,
       },
     },
+    
+    sms: {
+      name: "sms-queue",
+      concurrency: parseInt(process.env.SMS_QUEUE_CONCURRENCY || "5", 10),
+      removeOnComplete: parseInt(process.env.SMS_QUEUE_REMOVE_ON_COMPLETE || "100", 10),
+      removeOnFail: parseInt(process.env.SMS_QUEUE_REMOVE_ON_FAIL || "50", 10),
+      attempts: parseInt(process.env.SMS_QUEUE_ATTEMPTS || "3", 10),
+      backoff: {
+        type: "exponential" as const,
+        delay: 2000,
+      },
+    },
   },
   
   // In test environment, use in-memory queue

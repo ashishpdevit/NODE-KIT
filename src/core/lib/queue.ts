@@ -107,6 +107,7 @@ type QueueInstance = Queue.Queue | InMemoryQueue;
 
 let emailQueue: QueueInstance | null = null;
 let pushQueue: QueueInstance | null = null;
+let smsQueue: QueueInstance | null = null;
 
 const createQueue = (name: string, options: any = {}): QueueInstance => {
   if (queueConfig.useRedis) {
@@ -153,6 +154,18 @@ export const getPushQueue = (): QueueInstance => {
   return pushQueue;
 };
 
+export const getSmsQueue = (): QueueInstance => {
+  if (!smsQueue) {
+    smsQueue = createQueue(queueConfig.queues.sms.name, {
+      removeOnComplete: queueConfig.queues.sms.removeOnComplete,
+      removeOnFail: queueConfig.queues.sms.removeOnFail,
+      attempts: queueConfig.queues.sms.attempts,
+      backoff: queueConfig.queues.sms.backoff,
+    });
+  }
+  return smsQueue;
+};
+
 export const closeQueues = async (): Promise<void> => {
   const promises: Promise<void>[] = [];
   
@@ -164,6 +177,11 @@ export const closeQueues = async (): Promise<void> => {
   if (pushQueue) {
     promises.push(pushQueue.close());
     pushQueue = null;
+  }
+  
+  if (smsQueue) {
+    promises.push(smsQueue.close());
+    smsQueue = null;
   }
   
   await Promise.all(promises);
@@ -184,13 +202,20 @@ export const getQueueStats = async () => {
       completed: 0,
       failed: 0,
     },
+    sms: {
+      waiting: 0,
+      active: 0,
+      completed: 0,
+      failed: 0,
+    },
   };
 
   try {
     const emailQ = getEmailQueue();
     const pushQ = getPushQueue();
+    const smsQ = getSmsQueue();
 
-    if (queueConfig.useRedis && emailQ instanceof Queue && pushQ instanceof Queue) {
+    if (queueConfig.useRedis && emailQ instanceof Queue && pushQ instanceof Queue && smsQ instanceof Queue) {
       const [emailWaiting, emailActive, emailCompleted, emailFailed] = await Promise.all([
         emailQ.getWaiting(),
         emailQ.getActive(),
@@ -203,6 +228,13 @@ export const getQueueStats = async () => {
         pushQ.getActive(),
         pushQ.getCompleted(),
         pushQ.getFailed(),
+      ]);
+
+      const [smsWaiting, smsActive, smsCompleted, smsFailed] = await Promise.all([
+        smsQ.getWaiting(),
+        smsQ.getActive(),
+        smsQ.getCompleted(),
+        smsQ.getFailed(),
       ]);
 
       stats.email = {
@@ -218,12 +250,21 @@ export const getQueueStats = async () => {
         completed: pushCompleted.length,
         failed: pushFailed.length,
       };
+
+      stats.sms = {
+        waiting: smsWaiting.length,
+        active: smsActive.length,
+        completed: smsCompleted.length,
+        failed: smsFailed.length,
+      };
     } else {
       // In-memory queue stats
       stats.email.waiting = (emailQ as InMemoryQueue).waiting;
       stats.email.active = (emailQ as InMemoryQueue).active;
       stats.push.waiting = (pushQ as InMemoryQueue).waiting;
       stats.push.active = (pushQ as InMemoryQueue).active;
+      stats.sms.waiting = (smsQ as InMemoryQueue).waiting;
+      stats.sms.active = (smsQ as InMemoryQueue).active;
     }
   } catch (error) {
     logger.error("Failed to get queue stats", error);

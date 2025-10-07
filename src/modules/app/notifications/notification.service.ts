@@ -3,6 +3,20 @@
 import type { StoredNotificationPayload } from "@/core/services/notificationCenter";
 import { prisma } from "@/core/lib/prisma";
 import { logger } from "@/core/utils/logger";
+import { translate } from "@/core/notifications/i18nHelper";
+
+/**
+ * Simple variable interpolation for notification strings
+ */
+const interpolateVariables = (template: string, variables?: Record<string, unknown>): string => {
+  if (!variables) {
+    return template;
+  }
+
+  return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
+    return variables[key] !== undefined ? String(variables[key]) : match;
+  });
+};
 
 const notificationSelect = {
   id: true,
@@ -26,20 +40,30 @@ type LocalizedNotification = {
   read: boolean;
   read_at: Date | null;
   created_at: Date;
-  locale: string;
-  translations: {
-    defaultLocale: string;
-    titles: Record<string, string>;
-    messages: Record<string, string>;
-  };
+  // locale: string;
+  // translations: {
+  //   defaultLocale: string;
+  //   titles: Record<string, string>;
+  //   messages: Record<string, string>;
+  // };
   metadata?: Record<string, unknown>;
   channels?: StoredNotificationPayload["channels"];
-  payload: StoredNotificationPayload;
+  // payload: StoredNotificationPayload;
 };
 
 const parsePayload = (data: string): StoredNotificationPayload => {
   try {
-    const parsed = JSON.parse(data) as StoredNotificationPayload;
+    const parsed = JSON.parse(data) as any;
+    
+    // Handle variables that might be at root level or in metadata
+    const variables = parsed.variables || parsed.metadata?.variables;
+    
+    // Ensure metadata includes variables for backwards compatibility
+    const metadata = {
+      ...parsed.metadata,
+      ...(variables ? { variables } : {}),
+    };
+    
     return {
       locale: parsed.locale ?? parsed.defaultLocale ?? "en",
       defaultLocale: parsed.defaultLocale ?? parsed.locale ?? "en",
@@ -47,7 +71,7 @@ const parsePayload = (data: string): StoredNotificationPayload => {
       message: parsed.message ?? "",
       titleTranslations: parsed.titleTranslations,
       messageTranslations: parsed.messageTranslations,
-      metadata: parsed.metadata,
+      metadata,
       channels: parsed.channels,
     };
   } catch (error) {
@@ -108,23 +132,58 @@ const formatNotificationForLocale = (
     locale,
   );
 
+  // Get variables from metadata
+  const variables = payload.metadata?.variables as Record<string, unknown> | undefined;
+
+  // Check if title/message are translation keys (contain dots like "messages.order.confirmed")
+  // or already translated strings (contain spaces or special characters)
+  const titleIsKey = title.value.includes(".") && !title.value.includes(" ");
+  const messageIsKey = message.value.includes(".") && !message.value.includes(" ");
+
+  // If it's a translation key, use translate function
+  // If it's already a translated string, just interpolate variables
+  const finalTitle = titleIsKey
+    ? translate(title.value, locale || "en", variables)
+    : interpolateVariables(title.value, variables);
+
+  const finalMessage = messageIsKey
+    ? translate(message.value, locale || "en", variables)
+    : interpolateVariables(message.value, variables);
+
+  // Interpolate variables in all translation maps as well
+  const interpolateTitleMap = (titleMap: Record<string, string>) => {
+    const result: Record<string, string> = {};
+    for (const [loc, val] of Object.entries(titleMap)) {
+      result[loc] = interpolateVariables(val, variables);
+    }
+    return result;
+  };
+
+  const interpolateMessageMap = (messageMap: Record<string, string>) => {
+    const result: Record<string, string> = {};
+    for (const [loc, val] of Object.entries(messageMap)) {
+      result[loc] = interpolateVariables(val, variables);
+    }
+    return result;
+  };
+
   return {
     id: record.id,
     type: record.type,
-    title: title.value,
-    message: message.value,
+    title: finalTitle,
+    message: finalMessage,
     read: Boolean(record.readAt),
     read_at: record.readAt ?? null,
     created_at: record.createdAt,
-    locale: title.locale,
-    translations: {
-      defaultLocale: payload.defaultLocale,
-      titles: title.map,
-      messages: message.map,
-    },
+    // locale: title.locale,
+    // translations: {
+    //   defaultLocale: payload.defaultLocale,
+    //   titles: interpolateTitleMap(title.map),
+    //   messages: interpolateMessageMap(message.map),
+    // },
     metadata: payload.metadata,
     channels: payload.channels,
-    payload,
+    // payload,
   };
 };
 
