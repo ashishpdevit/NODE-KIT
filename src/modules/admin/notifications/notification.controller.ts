@@ -31,7 +31,7 @@ export const listNotifications = async (req: Request, res: Response) => {
       typeof req.query.notifiable_type === "string"
         ? req.query.notifiable_type
         : userTypeQuery === "user"
-        ? "app_user"
+        ? "user"
         : undefined;
     const notifiable_id = typeof req.query.notifiable_id === "string" ? req.query.notifiable_id : undefined;
     const read = parseReadQuery(req.query.read);

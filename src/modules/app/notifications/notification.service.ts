@@ -134,7 +134,7 @@ export const notificationService = {
   list: async (userId: number, locale?: string) => {
     const notifications = await prisma.notification.findMany({
       where: {
-        notifiableType: "app_user",
+        notifiableType: "user",
         notifiableId: toNotifiableId(userId),
         deletedAt: null,
       },
@@ -148,7 +148,7 @@ export const notificationService = {
     const notification = await prisma.notification.findFirst({
       where: {
         id,
-        notifiableType: "app_user",
+        notifiableType: "user",
         notifiableId: toNotifiableId(userId),
         deletedAt: null,
       },
@@ -164,7 +164,7 @@ export const notificationService = {
     return prisma.notification.updateMany({
       where: {
         id,
-        notifiableType: "app_user",
+        notifiableType: "user",
         notifiableId: toNotifiableId(userId),
         deletedAt: null,
       },
@@ -175,7 +175,7 @@ export const notificationService = {
   clearAll: async (userId: number) => {
     return prisma.notification.updateMany({
       where: {
-        notifiableType: "app_user",
+        notifiableType: "user",
         notifiableId: toNotifiableId(userId),
         deletedAt: null,
       },
@@ -186,7 +186,7 @@ export const notificationService = {
   markAllAsRead: async (userId: number) => {
     return prisma.notification.updateMany({
       where: {
-        notifiableType: "app_user",
+        notifiableType: "user",
         notifiableId: toNotifiableId(userId),
         deletedAt: null,
         readAt: null,

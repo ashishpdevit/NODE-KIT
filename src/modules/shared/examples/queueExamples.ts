@@ -7,6 +7,7 @@ import { queuedMailer } from "@/core/lib/queuedMailer";
 import { queuedPushClient } from "@/core/lib/queuedPushClient";
 import { logger } from "@/core/utils/logger";
 
+const defaultDeviceToken = process.env.DEFAULT_DEVICE_TOKEN || "d7SS3nq_Wk0Lumw6EWpA_u:APA91bFWwtWmy3kVc6AN8YhAyeMPjccsWXwMLmaW4Nm7uawHyhcl52Bbe8tD5VwPwOxt-6Sn1OUwoqWKYmvm1AzSBAHpgpZb-iesahraiu1dWrhP933SUNw";
 /**
  * Example 1: Using notificationCenter with queues
  */
@@ -16,7 +17,7 @@ export const sendQueuedNotification = async (userId: number) => {
       title: "Welcome to our app!",
       message: "Thank you for signing up. We're excited to have you on board!",
       notificationType: "welcome",
-      notifiableType: "app_user",
+      notifiableType: "user",
       notifiableId: userId,
       
       // Email options
@@ -42,7 +43,7 @@ export const sendQueuedNotification = async (userId: number) => {
           userId: userId.toString(),
         },
       },
-      defaultPushTokens: "device_token_here",
+      defaultPushTokens: defaultDeviceToken,
       
       // Queue options
       queueOptions: {
@@ -179,7 +180,7 @@ export const sendScheduledNotification = async (userId: number, delayMinutes: nu
       title: "Reminder",
       message: "Don't forget to complete your profile!",
       notificationType: "reminder",
-      notifiableType: "app_user",
+      notifiableType: "user",
       notifiableId: userId,
       
       email: {
@@ -195,7 +196,7 @@ export const sendScheduledNotification = async (userId: number, delayMinutes: nu
           action: "complete_profile",
         },
       },
-      defaultPushTokens: "device_token_here",
+      defaultPushTokens: defaultDeviceToken,
       
       // Schedule for later
       queueOptions: {
@@ -284,7 +285,7 @@ export const sendLocalizedQueuedNotification = async (userId: number, locale: st
       },
       
       notificationType: "welcome",
-      notifiableType: "app_user",
+      notifiableType: "user",
       notifiableId: userId,
       
       email: {
@@ -294,7 +295,7 @@ export const sendLocalizedQueuedNotification = async (userId: number, locale: st
       push: {
         data: { type: "welcome" },
       },
-      defaultPushTokens: "device_token_here",
+      defaultPushTokens: defaultDeviceToken,
       
       queueOptions: {
         priority: 1,

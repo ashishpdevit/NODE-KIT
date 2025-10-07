@@ -7,7 +7,7 @@ import { signAppJwt } from "@/core/utils/jwt";
 import { logger } from "@/core/utils/logger";
 import { appConfig } from "@/core/config";
 import { queuedMailer } from "@/core/lib/queuedMailer";
-import { notificationCenter } from "@/core/services/notificationCenter";
+import { sendNotification, authNotifications, shipmentNotifications } from "@/core/notifications";
 
 import { appAuthService, type AppUserSafe } from "./auth.service";
 import {
@@ -223,22 +223,49 @@ export const logoutAppUser = async (_req: Request, res: Response) => {
   try {
     if (user.deviceToken && user.notificationsEnabled) {
       try {
-        await notificationCenter.dispatch({
-          title: "Logged out",
-          message: "You have successfully logged out of your account.",
-          persist: false,
-          defaultLocale: user.locale ?? "en",
-          targetLocale: user.locale ?? "en",
-          push: {
-            tokens: user.deviceToken,
-            data: {
-              type: "logout",
-              timestamp: new Date().toISOString(),
-            },
-          },
+        // Using the new notification system with i18n keys
+        // await sendNotification({
+        //   userId: user.id,
+        //   data: {
+        //     type: "auth_logout",
+        //     title: "messages.push_notification.auth.logout.title",
+        //     message: "messages.push_notification.auth.logout.message",
+        //     variables: {
+        //       userName: user.name || "User",
+        //       timestamp: new Date().toISOString(),
+        //     },
+        //     metadata: {
+        //       action: "logout",
+        //     },
+        //   },
+        //   locale: user.locale || "en",
+        //   sendPush: true,
+        //   sendEmail: false,
+        //   markAsRead: false,
+        // });
+        await sendNotification({
+          userId: user.id,
+          data: authNotifications.logout.build({ userName: user.name || "User", timestamp: new Date().toISOString() }),
+          sendPush: true,   // Sends in user's locale
+          sendEmail: true,  // Sends in user's locale
+          useQueue: true,   // Async delivery,
+          // Optional: Pass additional context for the email template
+          emailContext: {
+            greeting: `Hi ${user.name}!`,
+            intro: ["You have been logged out from your account."],
+            outro: ["We hope to see you again soon!"],
+            ctas: [
+              {
+                label: "Log Back In",
+                url: `/login`
+              }
+            ]
+          }
         });
+
+        logger.info("Logout notification sent successfully", { userId: user.id });
       } catch (error) {
-        logger.error("Failed to send logout push notification", error);
+        logger.error("Failed to send logout notification", error);
       }
     }
 

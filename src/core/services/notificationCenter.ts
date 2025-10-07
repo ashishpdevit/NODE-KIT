@@ -532,7 +532,7 @@ export const notificationCenter = {
   async notifyUser(userId: number, options: NotificationDispatchOptions) {
     return this.dispatch({
       ...options,
-      notifiableType: options.notifiableType ?? "app_user",
+      notifiableType: options.notifiableType ?? "user",
       notifiableId: options.notifiableId ?? userId,
     });
   },
@@ -540,7 +540,7 @@ export const notificationCenter = {
   async notifyUserQueued(userId: number, options: NotificationDispatchOptions) {
     return this.dispatchQueued({
       ...options,
-      notifiableType: options.notifiableType ?? "app_user",
+      notifiableType: options.notifiableType ?? "user",
       notifiableId: options.notifiableId ?? userId,
     });
   },
