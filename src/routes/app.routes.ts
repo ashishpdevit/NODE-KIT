@@ -3,7 +3,6 @@ import { Router } from "express";
 import {
   authRouter,
   contactRequestRouter,
-  customerRouter,
   faqRouter,
   initRouter,
   notificationRouter,
@@ -15,7 +14,6 @@ export const appRoutes = Router();
 
 appRoutes.use("/init", initRouter);
 appRoutes.use("/auth", authRouter);
-appRoutes.use("/customers", customerRouter);
 appRoutes.use("/orders", orderRouter);
 appRoutes.use("/products", productRouter);
 appRoutes.use("/faqs", faqRouter);

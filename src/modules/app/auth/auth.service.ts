@@ -125,7 +125,11 @@ export const appAuthService = {
   clearDeviceRegistration: (id: number) =>
     prisma.appUser.update({
       where: { id },
-      data: { deviceToken: null, notificationsEnabled: false },
+      data: { 
+        deviceToken: null, 
+        notificationsEnabled: false,
+        apiTokenVersion: { increment: 1 },
+      },
       select: baseSelect,
     }),
   issuePasswordResetToken: async (userId: number) => {

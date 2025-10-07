@@ -9,3 +9,4 @@ export { adminNotificationRouter } from "./notifications/notification.router";
 export { adminProductRouter } from "./products/product.router";
 export { adminOrderRouter } from "./orders/order.router";
 export { dashboardRouter } from "./dashboard/dashboard.router";
+export { adminCustomerRouter } from "./customers/customer.router";

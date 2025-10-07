@@ -12,6 +12,7 @@ import { queueWorker } from "@/core/services/queueWorker";
 import { apiRouter } from "./routes";
 import { toSuccess } from "@/core/utils/httpResponse";
 import { logger } from "@/core/utils/logger";
+import { apiKeyAuth } from "./core/middlewares/apiKeyAuth";
 
 export const createApp = (): Express => {
   const app = express();
@@ -29,6 +30,7 @@ export const createApp = (): Express => {
     res.json(toSuccess("Welcome to the Node Starter Kit"));
   });
 
+  app.use(apiKeyAuth);
   app.use("/api", apiRouter);
 
   app.use(notFoundHandler);

@@ -13,7 +13,12 @@
           "name": "Root Welcome",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/",
               "host": [
@@ -27,7 +32,12 @@
           "name": "Health Check",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/health",
               "host": [
@@ -44,7 +54,12 @@
           "name": "List Examples",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/examples",
               "host": [
@@ -65,6 +80,10 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
               }
             ],
             "body": {
@@ -92,7 +111,12 @@
           "name": "RBAC Snapshot",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/rbac",
               "host": [
@@ -113,6 +137,10 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
               }
             ],
             "body": {
@@ -153,6 +181,10 @@
                   {
                     "key": "Content-Type",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "body": {
@@ -179,6 +211,54 @@
               }
             },
             {
+              "name": "Forgot Password",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/auth/forgot-password",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "auth",
+                    "forgot-password"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Reset Password",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/auth/reset-password",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "auth",
+                    "reset-password"
+                  ]
+                }
+              }
+            },
+            {
               "name": "Profile",
               "request": {
                 "method": "GET",
@@ -186,6 +266,10 @@
                   {
                     "key": "Authorization",
                     "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "url": {
@@ -201,11 +285,67 @@
                   ]
                 }
               }
+            },
+            {
+              "name": "Dashboard Overview",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/dashboard/overview",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "dashboard",
+                    "overview"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Admin Logout",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/auth/logout",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "auth",
+                    "logout"
+                  ]
+                }
+              }
             }
           ]
         },
         {
-          "name": "Users",
+          "name": "AdminUsers",
           "item": [
             {
               "name": "List Admins",
@@ -215,6 +355,10 @@
                   {
                     "key": "Authorization",
                     "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "url": {
@@ -238,6 +382,10 @@
                   {
                     "key": "Authorization",
                     "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "url": {
@@ -266,6 +414,10 @@
                   {
                     "key": "Content-Type",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "body": {
@@ -293,6 +445,161 @@
           ]
         },
         {
+          "name": "App Users",
+          "item": [
+            {
+              "name": "List Customers",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/customers",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "customers"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "Active"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Create Customer",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"+1234567890\",\n  \"status\": \"Active\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/customers",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "customers"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Customer",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/customers/{{customerId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "customers",
+                    "{{customerId}}"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Update Customer",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"John Doe Updated\",\n  \"email\": \"john.updated@example.com\",\n  \"phone\": \"+1234567890\",\n  \"status\": \"Active\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/customers/{{customerId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "customers",
+                    "{{customerId}}"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Delete Customer",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/customers/{{customerId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "customers",
+                    "{{customerId}}"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
           "name": "Products",
           "item": [
             {
@@ -307,6 +614,10 @@
                   {
                     "key": "Content-Type",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "body": {
@@ -339,6 +650,10 @@
                   {
                     "key": "Authorization",
                     "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "url": {
@@ -362,6 +677,10 @@
                   {
                     "key": "Authorization",
                     "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "url": {
@@ -424,6 +743,10 @@
                   {
                     "key": "Content-Type",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "body": {
@@ -456,6 +779,10 @@
                   {
                     "key": "Authorization",
                     "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "url": {
@@ -484,6 +811,10 @@
                   {
                     "key": "Authorization",
                     "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "url": {
@@ -511,6 +842,10 @@
                   {
                     "key": "Content-Type",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "body": {
@@ -549,6 +884,10 @@
                   {
                     "key": "Authorization",
                     "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "url": {
@@ -577,6 +916,10 @@
                   {
                     "key": "Content-Type",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "body": {
@@ -615,6 +958,10 @@
                   {
                     "key": "Authorization",
                     "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "url": {
@@ -638,6 +985,10 @@
                   {
                     "key": "Authorization",
                     "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "url": {
@@ -666,6 +1017,10 @@
                   {
                     "key": "Content-Type",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "body": {
@@ -703,6 +1058,10 @@
                   {
                     "key": "Content-Type",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "body": {
@@ -741,6 +1100,10 @@
                   {
                     "key": "Content-Type",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "body": {
@@ -831,7 +1194,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"email\": \"{{appUserEmail}}\",\n  \"password\": \"{{appUserPassword}}\",\n  \"name\": \"Mobile Tester\",\n  \"deviceToken\": \"{{deviceToken}}\",\n  \"notificationsEnabled\": true,\n  \"locale\": \"en\"\n}",
+                  "raw": "{\n  \"email\": \"{{appUserEmail}}\",\n  \"password\": \"{{appUserPassword}}\",\n  \"name\": \"Mobile Tester\",\n  \"device_token\": \"{{deviceToken}}\",\n  \"notificationsEnabled\": true,\n  \"locale\": \"en\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -868,7 +1231,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"email\": \"{{appUserEmail}}\",\n  \"password\": \"{{appUserPassword}}\",\n  \"deviceToken\": \"{{deviceToken}}\",\n  \"notificationsEnabled\": true,\n  \"locale\": \"en\"\n}",
+                  "raw": "{\n  \"email\": \"{{appUserEmail}}\",\n  \"password\": \"{{appUserPassword}}\",\n  \"device_token\": \"{{deviceToken}}\",\n  \"notifications_enabled\": true,\n  \"locale\": \"en\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -937,7 +1300,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"name\": \"Updated Name\",\n  \"phone\": \"+1234567890\",\n  \"deviceToken\": \"{{deviceToken}}\",\n  \"notificationsEnabled\": true,\n  \"locale\": \"en\"\n}",
+                  "raw": "{\n  \"name\": \"Updated Name\",\n  \"phone\": \"+1234567890\",\n  \"device_token\": \"{{deviceToken}}\",\n  \"notifications_enabled\": true,\n  \"locale\": \"en\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -1069,7 +1432,12 @@
               "name": "List Products",
               "request": {
                 "method": "GET",
-                "header": [],
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
                 "url": {
                   "raw": "{{baseUrl}}/api/app/products",
                   "host": [
@@ -1087,7 +1455,12 @@
               "name": "Get Product",
               "request": {
                 "method": "GET",
-                "header": [],
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
                 "url": {
                   "raw": "{{baseUrl}}/api/app/products/{{productId}}",
                   "host": [
@@ -1111,7 +1484,12 @@
               "name": "List FAQs",
               "request": {
                 "method": "GET",
-                "header": [],
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
                 "url": {
                   "raw": "{{baseUrl}}/api/app/faqs",
                   "host": [
@@ -1129,7 +1507,12 @@
               "name": "Get FAQ",
               "request": {
                 "method": "GET",
-                "header": [],
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
                 "url": {
                   "raw": "{{baseUrl}}/api/app/faqs/{{faqId}}",
                   "host": [
@@ -1147,145 +1530,18 @@
           ]
         },
         {
-          "name": "Customers",
-          "item": [
-            {
-              "name": "List Customers",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{baseUrl}}/api/app/customers",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "api",
-                    "app",
-                    "customers"
-                  ],
-                  "query": [
-                    {
-                      "key": "status",
-                      "value": "Active"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "name": "Create Customer",
-              "request": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"+1234567890\",\n  \"status\": \"Active\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{baseUrl}}/api/app/customers",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "api",
-                    "app",
-                    "customers"
-                  ]
-                }
-              }
-            },
-            {
-              "name": "Get Customer",
-              "request": {
-                "method": "GET",
-                "header": [],
-                "url": {
-                  "raw": "{{baseUrl}}/api/app/customers/{{customerId}}",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "api",
-                    "app",
-                    "customers",
-                    "{{customerId}}"
-                  ]
-                }
-              }
-            },
-            {
-              "name": "Update Customer",
-              "request": {
-                "method": "PUT",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"name\": \"John Doe Updated\",\n  \"email\": \"john.updated@example.com\",\n  \"phone\": \"+1234567890\",\n  \"status\": \"Active\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{baseUrl}}/api/app/customers/{{customerId}}",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "api",
-                    "app",
-                    "customers",
-                    "{{customerId}}"
-                  ]
-                }
-              }
-            },
-            {
-              "name": "Delete Customer",
-              "request": {
-                "method": "DELETE",
-                "header": [],
-                "url": {
-                  "raw": "{{baseUrl}}/api/app/customers/{{customerId}}",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "api",
-                    "app",
-                    "customers",
-                    "{{customerId}}"
-                  ]
-                }
-              }
-            }
-          ]
-        },
-        {
           "name": "Orders",
           "item": [
             {
               "name": "List Orders",
               "request": {
                 "method": "GET",
-                "header": [],
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
                 "url": {
                   "raw": "{{baseUrl}}/api/app/orders",
                   "host": [
@@ -1307,6 +1563,10 @@
                   {
                     "key": "Content-Type",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "body": {
@@ -1335,7 +1595,12 @@
               "name": "Get Order",
               "request": {
                 "method": "GET",
-                "header": [],
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
                 "url": {
                   "raw": "{{baseUrl}}/api/app/orders/{{orderId}}",
                   "host": [
@@ -1358,6 +1623,10 @@
                   {
                     "key": "Content-Type",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "body": {
@@ -1387,7 +1656,12 @@
               "name": "Delete Order",
               "request": {
                 "method": "DELETE",
-                "header": [],
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
                 "url": {
                   "raw": "{{baseUrl}}/api/app/orders/{{orderId}}",
                   "host": [
@@ -1411,7 +1685,12 @@
               "name": "List Contact Requests",
               "request": {
                 "method": "GET",
-                "header": [],
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
                 "url": {
                   "raw": "{{baseUrl}}/api/app/contact-requests",
                   "host": [
@@ -1433,6 +1712,10 @@
                   {
                     "key": "Content-Type",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "body": {
@@ -1461,7 +1744,12 @@
               "name": "Get Contact Request",
               "request": {
                 "method": "GET",
-                "header": [],
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
                 "url": {
                   "raw": "{{baseUrl}}/api/app/contact-requests/{{contactRequestId}}",
                   "host": [
@@ -1489,6 +1777,10 @@
                   {
                     "key": "Authorization",
                     "value": "Bearer {{appAuthToken}}"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "url": {
@@ -1512,6 +1804,10 @@
                   {
                     "key": "Authorization",
                     "value": "Bearer {{appAuthToken}}"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "url": {
@@ -1540,6 +1836,10 @@
                   {
                     "key": "Content-Type",
                     "value": "application/json"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "body": {
@@ -1575,6 +1875,10 @@
                   {
                     "key": "Authorization",
                     "value": "Bearer {{appAuthToken}}"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
                   }
                 ],
                 "url": {
@@ -1623,7 +1927,7 @@
     },
     {
       "key": "appUserEmail",
-      "value": "mobile-user@example.com"
+      "value": "mobile-user@yopmail.com"
     },
     {
       "key": "appUserPassword",
@@ -1639,7 +1943,7 @@
     },
     {
       "key": "deviceToken",
-      "value": "test-device-token-123"
+      "value": "d7SS3nq_Wk0Lumw6EWpA_u:APA91bFWwtWmy3kVc6AN8YhAyeMPjccsWXwMLmaW4Nm7uawHyhcl52Bbe8tD5VwPwOxt-6Sn1OUwoqWKYmvm1AzSBAHpgpZb-iesahraiu1dWrhP933SUNw"
     },
     {
       "key": "customerId",

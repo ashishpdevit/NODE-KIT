@@ -59,7 +59,11 @@ export const adminAuthService = {
   clearDeviceRegistration: (id: number) =>
     prisma.admin.update({
       where: { id },
-      data: { deviceToken: null, notificationsEnabled: false },
+      data: { 
+        deviceToken: null, 
+        notificationsEnabled: false,
+        apiTokenVersion: { increment: 1 },
+      },
       select: baseSelect,
     }),
   updatePassword: async (id: number, password: string) => {

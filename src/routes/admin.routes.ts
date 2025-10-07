@@ -4,6 +4,7 @@ import { adminAuth } from "@/core/middlewares/adminAuth";
 import {
   adminAuthRouter,
   adminRouter,
+  adminCustomerRouter,
   adminContactRequestRouter,
   adminFaqRouter,
   adminNotificationRouter,
@@ -14,15 +15,16 @@ import {
   dashboardRouter,
   languageRouter,
 } from "@/modules/admin";
+import { apiKeyAuth } from "@/core/middlewares/apiKeyAuth";
 
 export const adminRoutes = Router();
 
 adminRoutes.use("/auth", adminAuthRouter);
-
 adminRoutes.use(adminAuth);
 
 adminRoutes.use("/dashboard", dashboardRouter);
 adminRoutes.use("/users", adminRouter);
+adminRoutes.use("/customers", adminCustomerRouter);
 adminRoutes.use("/menu-links", appMenuLinkRouter);
 adminRoutes.use("/settings/app", appSettingRouter);
 adminRoutes.use("/settings/languages", languageRouter);
