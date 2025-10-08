@@ -3,11 +3,12 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/core/lib/prisma";
 
 type RoleWithPermissions = {
-  id: string;
+  id: number;
+  key: string;
   name: string;
   description: string | null;
   isSystem: boolean;
-  permissions: string[];
+  permissions: number[];
   createdAt: Date;
   updatedAt: Date;
 };
@@ -16,6 +17,7 @@ const mapRole = (
   role: Prisma.RbacRoleGetPayload<{ include: { permissions: { include: { permission: true } } } }>
 ): RoleWithPermissions => ({
   id: role.id,
+  key: role.key,
   name: role.name,
   description: role.description,
   isSystem: role.isSystem,
@@ -60,14 +62,14 @@ export const rbacService = {
     const modules = await prisma.rbacModule.findMany({ orderBy: { name: "asc" } });
     return modules.map((module) => ({ ...module, tags: parseTags(module.tags) }));
   },
-  getModule: async (id: string) => {
+  getModule: async (id: number) => {
     const module = await prisma.rbacModule.findUnique({ where: { id } });
     return module ? { ...module, tags: parseTags(module.tags) } : null;
   },
-  createModule: async (data: { id: string; name: string; resource: string; description?: string; tags?: string[] }) => {
+  createModule: async (data: { key: string; name: string; resource: string; description?: string; tags?: string[] }) => {
     const created = await prisma.rbacModule.create({
       data: {
-        id: data.id,
+        key: data.key,
         name: data.name,
         resource: data.resource,
         description: data.description,
@@ -77,7 +79,7 @@ export const rbacService = {
     return { ...created, tags: parseTags(created.tags) };
   },
   updateModule: async (
-    id: string,
+    id: number,
     data: { name?: string; resource?: string; description?: string | null; tags?: string[] | null }
   ) => {
     const updated = await prisma.rbacModule.update({
@@ -89,7 +91,19 @@ export const rbacService = {
     });
     return { ...updated, tags: parseTags(updated.tags) };
   },
-  deleteModule: async (id: string) => {
+  deleteModule: async (id: number) => {
+    // First, get all permissions associated with this module
+    const permissions = await prisma.rbacPermission.findMany({ where: { moduleId: id } });
+    
+    // Delete role-permission links for these permissions
+    for (const permission of permissions) {
+      await prisma.rolePermission.deleteMany({ where: { permissionId: permission.id } });
+    }
+    
+    // Delete all permissions associated with this module
+    await prisma.rbacPermission.deleteMany({ where: { moduleId: id } });
+    
+    // Finally, delete the module itself
     const removed = await prisma.rbacModule.delete({ where: { id } });
     return { ...removed, tags: parseTags(removed.tags) };
   },
@@ -99,15 +113,21 @@ export const rbacService = {
     const permissions = await prisma.rbacPermission.findMany({ orderBy: { name: "asc" } });
     return permissions.map((permission) => ({ ...permission, moduleId: permission.moduleId ?? undefined }));
   },
-  getPermission: async (id: string) => {
+  getPermission: async (id: number) => {
     const permission = await prisma.rbacPermission.findUnique({ where: { id } });
     return permission ? { ...permission, moduleId: permission.moduleId ?? undefined } : null;
   },
   createPermission: (data: Prisma.RbacPermissionCreateInput) =>
     prisma.rbacPermission.create({ data }),
-  updatePermission: (id: string, data: Prisma.RbacPermissionUpdateInput) =>
+  updatePermission: (id: number, data: Prisma.RbacPermissionUpdateInput) =>
     prisma.rbacPermission.update({ where: { id }, data }),
-  deletePermission: (id: string) => prisma.rbacPermission.delete({ where: { id } }),
+  deletePermission: async (id: number) => {
+    // First, delete all role-permission links for this permission
+    await prisma.rolePermission.deleteMany({ where: { permissionId: id } });
+    
+    // Then, delete the permission itself
+    return prisma.rbacPermission.delete({ where: { id } });
+  },
 
   // Roles
   listRoles: async (systemOnly?: boolean) => {
@@ -118,7 +138,7 @@ export const rbacService = {
     });
     return roles.map(mapRole);
   },
-  getRole: async (id: string) => {
+  getRole: async (id: number) => {
     const role = await prisma.rbacRole.findUnique({
       where: { id },
       include: { permissions: { include: { permission: true } } },
@@ -126,7 +146,7 @@ export const rbacService = {
     return role ? mapRole(role) : null;
   },
   createRole: async (
-    data: Prisma.RbacRoleCreateInput & { permissionIds?: string[] }
+    data: Prisma.RbacRoleCreateInput & { permissionIds?: number[] }
   ) => {
     const { permissionIds = [], ...roleData } = data;
     return prisma.$transaction(async (tx) => {
@@ -147,8 +167,8 @@ export const rbacService = {
     });
   },
   updateRole: async (
-    id: string,
-    data: Prisma.RbacRoleUpdateInput & { permissionIds?: string[] }
+    id: number,
+    data: Prisma.RbacRoleUpdateInput & { permissionIds?: number[] }
   ) => {
     const { permissionIds, ...roleData } = data;
     return prisma.$transaction(async (tx) => {
@@ -169,7 +189,16 @@ export const rbacService = {
       return mapRole(fullRole);
     });
   },
-  deleteRole: (id: string) => prisma.rbacRole.delete({ where: { id } }),
+  deleteRole: async (id: number) => {
+    // First, delete all role-permission links
+    await prisma.rolePermission.deleteMany({ where: { roleId: id } });
+    
+    // Then, delete all assignments for this role
+    await prisma.rbacAssignment.deleteMany({ where: { roleId: id } });
+    
+    // Finally, delete the role itself
+    return prisma.rbacRole.delete({ where: { id } });
+  },
 
   // Assignments
   listAssignments: (subjectId?: string) =>
@@ -177,10 +206,10 @@ export const rbacService = {
       where: subjectId ? { subjectId } : undefined,
       orderBy: { subjectId: "asc" },
     }),
-  getAssignment: (id: string) => prisma.rbacAssignment.findUnique({ where: { id } }),
+  getAssignment: (id: number) => prisma.rbacAssignment.findUnique({ where: { id } }),
   createAssignment: (data: Prisma.RbacAssignmentUncheckedCreateInput) =>
     prisma.rbacAssignment.create({ data }),
-  updateAssignment: (id: string, data: Prisma.RbacAssignmentUncheckedUpdateInput) =>
+  updateAssignment: (id: number, data: Prisma.RbacAssignmentUncheckedUpdateInput) =>
     prisma.rbacAssignment.update({ where: { id }, data }),
-  deleteAssignment: (id: string) => prisma.rbacAssignment.delete({ where: { id } }),
+  deleteAssignment: (id: number) => prisma.rbacAssignment.delete({ where: { id } }),
 };

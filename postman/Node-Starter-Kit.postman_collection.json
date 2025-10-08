@@ -130,40 +130,658 @@
           }
         },
         {
-          "name": "Create RBAC Assignment",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "x-api-key",
-                "value": "{{apiKey}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"subjectId\": \"qa@example.com\",\n  \"subjectType\": \"user\",\n  \"roleId\": \"support\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
+          "name": "RBAC Modules",
+          "item": [
+            {
+              "name": "List RBAC Modules",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/rbac/modules",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "rbac",
+                    "modules"
+                  ]
                 }
               }
             },
-            "url": {
-              "raw": "{{baseUrl}}/api/rbac/assignments",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "rbac",
-                "assignments"
-              ]
+            {
+              "name": "Get RBAC Module",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/rbac/modules/{{moduleId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "rbac",
+                    "modules",
+                    "{{moduleId}}"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Create RBAC Module",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"key\": \"test-module\",\n  \"name\": \"Test Module\",\n  \"description\": \"A test module for RBAC\",\n  \"resource\": \"test\",\n  \"tags\": [\"test\", \"rbac\"]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/rbac/modules",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "rbac",
+                    "modules"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Update RBAC Module",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Updated Test Module\",\n  \"description\": \"An updated test module for RBAC\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/rbac/modules/{{moduleId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "rbac",
+                    "modules",
+                    "{{moduleId}}"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Delete RBAC Module",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/rbac/modules/{{moduleId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "rbac",
+                    "modules",
+                    "{{moduleId}}"
+                  ]
+                }
+              }
             }
-          }
+          ]
+        },
+        {
+          "name": "RBAC Permissions",
+          "item": [
+            {
+              "name": "List RBAC Permissions",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/rbac/permissions",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "rbac",
+                    "permissions"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get RBAC Permission",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/rbac/permissions/{{permissionId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "rbac",
+                    "permissions",
+                    "{{permissionId}}"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Create RBAC Permission",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"key\": \"test:permission\",\n  \"name\": \"Test Permission\",\n  \"description\": \"A test permission for RBAC\",\n  \"resource\": \"test\",\n  \"action\": \"permission\",\n  \"moduleId\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/rbac/permissions",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "rbac",
+                    "permissions"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Update RBAC Permission",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Updated Test Permission\",\n  \"description\": \"An updated test permission for RBAC\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/rbac/permissions/{{permissionId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "rbac",
+                    "permissions",
+                    "{{permissionId}}"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Delete RBAC Permission",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/rbac/permissions/{{permissionId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "rbac",
+                    "permissions",
+                    "{{permissionId}}"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "RBAC Roles",
+          "item": [
+            {
+              "name": "List RBAC Roles",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/rbac/roles",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "rbac",
+                    "roles"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "List RBAC Roles (System Only)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/rbac/roles?system=true",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "rbac",
+                    "roles"
+                  ],
+                  "query": [
+                    {
+                      "key": "system",
+                      "value": "true"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get RBAC Role",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/rbac/roles/{{roleId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "rbac",
+                    "roles",
+                    "{{roleId}}"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Create RBAC Role",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"key\": \"test-role\",\n  \"name\": \"Test Role\",\n  \"description\": \"A test role for RBAC\",\n  \"isSystem\": false,\n  \"permissions\": [1, 2, 3]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/rbac/roles",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "rbac",
+                    "roles"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Update RBAC Role",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Updated Test Role\",\n  \"description\": \"An updated test role for RBAC\",\n  \"permissions\": [1, 2, 3, 4]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/rbac/roles/{{roleId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "rbac",
+                    "roles",
+                    "{{roleId}}"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Delete RBAC Role",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/rbac/roles/{{roleId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "rbac",
+                    "roles",
+                    "{{roleId}}"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "RBAC Assignments",
+          "item": [
+            {
+              "name": "List RBAC Assignments",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/rbac/assignments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "rbac",
+                    "assignments"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "List RBAC Assignments by Subject",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/rbac/assignments?subjectId=admin@yopmail.com",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "rbac",
+                    "assignments"
+                  ],
+                  "query": [
+                    {
+                      "key": "subjectId",
+                      "value": "admin@yopmail.com"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get RBAC Assignment",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/rbac/assignments/{{assignmentId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "rbac",
+                    "assignments",
+                    "{{assignmentId}}"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Create RBAC Assignment",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"key\": \"assign-test-user\",\n  \"subjectId\": \"test@example.com\",\n  \"subjectType\": \"user\",\n  \"roleId\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/rbac/assignments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "rbac",
+                    "assignments"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Update RBAC Assignment",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"subjectId\": \"updated@example.com\",\n  \"roleId\": 2\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/rbac/assignments/{{assignmentId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "rbac",
+                    "assignments",
+                    "{{assignmentId}}"
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Delete RBAC Assignment",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/rbac/assignments/{{assignmentId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "rbac",
+                    "assignments",
+                    "{{assignmentId}}"
+                  ]
+                }
+              }
+            }
+          ]
         }
       ]
     },
@@ -1967,6 +2585,22 @@
     },
     {
       "key": "faqId",
+      "value": "1"
+    },
+    {
+      "key": "moduleId",
+      "value": "1"
+    },
+    {
+      "key": "permissionId",
+      "value": "1"
+    },
+    {
+      "key": "roleId",
+      "value": "1"
+    },
+    {
+      "key": "assignmentId",
       "value": "1"
     }
   ]

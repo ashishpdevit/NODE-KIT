@@ -305,55 +305,87 @@ async function seedRbac() {
     }>;
   }>("rbac.json");
 
-  await prisma.rbacModule.createMany({
-    data: snapshot.modules.map((module) => ({
-      id: module.id,
-      name: module.name,
-      description: module.description,
-      resource: module.resource,
-      tags: toJson(module.tags ?? []),
-    })),
-  });
-
-  await prisma.rbacPermission.createMany({
-    data: snapshot.permissions.map((permission) => ({
-      id: permission.id,
-      name: permission.name,
-      description: permission.description,
-      resource: permission.resource,
-      action: permission.action,
-      moduleId: permission.resource,
-    })),
-  });
-
-  await prisma.rbacRole.createMany({
-    data: snapshot.roles.map((role) => ({
-      id: role.id,
-      name: role.name,
-      description: role.description,
-      isSystem: role.isSystem ?? false,
-    })),
-  });
-
-  const permissionIds = new Set(snapshot.permissions.map((permission) => permission.id));
-
-  const rolePermissionLinks = snapshot.roles.flatMap((role) =>
-    (role.permissions || [])
-      .filter((permissionId) => permissionId !== "*" && permissionIds.has(permissionId))
-      .map((permissionId) => ({
-        roleId: role.id,
-        permissionId,
-      }))
+  // Create modules and get their new IDs
+  const createdModules = await Promise.all(
+    snapshot.modules.map(async (module) => {
+      const created = await prisma.rbacModule.create({
+        data: {
+          key: module.id, // Keep the original string ID as 'key'
+          name: module.name,
+          description: module.description,
+          resource: module.resource,
+          tags: toJson(module.tags ?? []),
+        },
+      });
+      return { oldId: module.id, newId: created.id, resource: module.resource };
+    })
   );
 
-  if (rolePermissionLinks.length > 0) {
-    for (const link of rolePermissionLinks) {
-      await prisma.rolePermission.create({ data: link });
+  const moduleIdMap = new Map(createdModules.map((m) => [m.oldId, m.newId]));
+  const resourceToModuleIdMap = new Map(createdModules.map((m) => [m.resource, m.newId]));
+
+  // Create permissions and get their new IDs
+  const createdPermissions = await Promise.all(
+    snapshot.permissions.map(async (permission) => {
+      const created = await prisma.rbacPermission.create({
+        data: {
+          key: permission.id, // Keep the original string ID as 'key'
+          name: permission.name,
+          description: permission.description,
+          resource: permission.resource,
+          action: permission.action,
+          moduleId: resourceToModuleIdMap.get(permission.resource) || null,
+        },
+      });
+      return { oldId: permission.id, newId: created.id };
+    })
+  );
+
+  const permissionIdMap = new Map(createdPermissions.map((p) => [p.oldId, p.newId]));
+
+  // Create roles and get their new IDs
+  const createdRoles = await Promise.all(
+    snapshot.roles.map(async (role) => {
+      const created = await prisma.rbacRole.create({
+        data: {
+          key: role.id, // Keep the original string ID as 'key'
+          name: role.name,
+          description: role.description,
+          isSystem: role.isSystem ?? false,
+        },
+      });
+      return { oldId: role.id, newId: created.id, permissions: role.permissions || [] };
+    })
+  );
+
+  const roleIdMap = new Map(createdRoles.map((r) => [r.oldId, r.newId]));
+
+  // Create role-permission links
+  for (const role of createdRoles) {
+    const validPermissionIds = role.permissions
+      .filter((permissionId) => permissionId !== "*" && permissionIdMap.has(permissionId))
+      .map((permissionId) => permissionIdMap.get(permissionId)!);
+
+    for (const permissionId of validPermissionIds) {
+      await prisma.rolePermission.create({
+        data: {
+          roleId: role.newId,
+          permissionId,
+        },
+      });
     }
   }
 
+  // Create assignments
   if (snapshot.assignments.length > 0) {
-    await prisma.rbacAssignment.createMany({ data: snapshot.assignments });
+    await prisma.rbacAssignment.createMany({
+      data: snapshot.assignments.map((assignment) => ({
+        key: assignment.id, // Keep the original string ID as 'key'
+        subjectId: assignment.subjectId,
+        subjectType: assignment.subjectType,
+        roleId: roleIdMap.get(assignment.roleId) || 0,
+      })),
+    });
   }
 }
 

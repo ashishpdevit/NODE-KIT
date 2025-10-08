@@ -179,7 +179,8 @@ model Language {
 }
 
 model RbacModule {
-  id          String   @id
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
   name        String
   description String? @db.Text
   resource    String
@@ -192,12 +193,13 @@ model RbacModule {
 }
 
 model RbacPermission {
-  id          String   @id
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
   name        String
   description String? @db.Text
   resource    String
   action      String
-  moduleId    String?
+  moduleId    Int?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   module      RbacModule? @relation(fields: [moduleId], references: [id])
@@ -207,7 +209,8 @@ model RbacPermission {
 }
 
 model RbacRole {
-  id          String @id
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
   name        String
   description String? @db.Text
   isSystem    Boolean @default(false)
@@ -220,8 +223,8 @@ model RbacRole {
 }
 
 model RolePermission {
-  roleId       String
-  permissionId String
+  roleId       Int
+  permissionId Int
   role         RbacRole       @relation(fields: [roleId], references: [id])
   permission   RbacPermission @relation(fields: [permissionId], references: [id])
 
@@ -230,10 +233,11 @@ model RolePermission {
 }
 
 model RbacAssignment {
-  id          String @id
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
   subjectId   String
   subjectType String
-  roleId      String
+  roleId      Int
   createdAt   DateTime @default(now())
   role        RbacRole @relation(fields: [roleId], references: [id])
 

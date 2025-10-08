@@ -34,7 +34,11 @@ export const listRbacModules = async (_req: Request, res: Response) => {
 };
 
 export const getRbacModule = async (req: Request, res: Response) => {
-  const module = await rbacService.getModule(req.params.id);
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res.status(400).json(toError("Invalid module ID"));
+  }
+  const module = await rbacService.getModule(id);
   if (!module) {
     return res.status(404).json(toError("Module not found"));
   }
@@ -49,7 +53,10 @@ export const createRbacModule = async (req: Request, res: Response) => {
 
   try {
     const created = await rbacService.createModule({
-      ...parsed.data,
+      key: parsed.data.key,
+      name: parsed.data.name,
+      resource: parsed.data.resource,
+      description: parsed.data.description,
       tags: parsed.data.tags ?? [],
     });
     res.status(201).json(toSuccess("RBAC module created", created));
@@ -59,6 +66,10 @@ export const createRbacModule = async (req: Request, res: Response) => {
 };
 
 export const updateRbacModule = async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res.status(400).json(toError("Invalid module ID"));
+  }
   const parsed = rbacModuleUpdateSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json(toError("Invalid payload", parsed.error.flatten()));
@@ -66,7 +77,7 @@ export const updateRbacModule = async (req: Request, res: Response) => {
 
   try {
     ensurePayload(parsed.data as Record<string, unknown>);
-    const updated = await rbacService.updateModule(req.params.id, {
+    const updated = await rbacService.updateModule(id, {
       ...parsed.data,
       tags: parsed.data.tags ?? undefined,
     });
@@ -80,8 +91,12 @@ export const updateRbacModule = async (req: Request, res: Response) => {
 };
 
 export const deleteRbacModule = async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res.status(400).json(toError("Invalid module ID"));
+  }
   try {
-    const removed = await rbacService.deleteModule(req.params.id);
+    const removed = await rbacService.deleteModule(id);
     res.json(toSuccess("RBAC module deleted", removed));
   } catch (error) {
     return handlePrismaError(res, error);
@@ -95,7 +110,11 @@ export const listRbacPermissions = async (_req: Request, res: Response) => {
 };
 
 export const getRbacPermission = async (req: Request, res: Response) => {
-  const permission = await rbacService.getPermission(req.params.id);
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res.status(400).json(toError("Invalid permission ID"));
+  }
+  const permission = await rbacService.getPermission(id);
   if (!permission) {
     return res.status(404).json(toError("Permission not found"));
   }
@@ -117,6 +136,10 @@ export const createRbacPermission = async (req: Request, res: Response) => {
 };
 
 export const updateRbacPermission = async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res.status(400).json(toError("Invalid permission ID"));
+  }
   const parsed = rbacPermissionUpdateSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json(toError("Invalid payload", parsed.error.flatten()));
@@ -124,7 +147,7 @@ export const updateRbacPermission = async (req: Request, res: Response) => {
 
   try {
     ensurePayload(parsed.data as Record<string, unknown>);
-    const updated = await rbacService.updatePermission(req.params.id, parsed.data);
+    const updated = await rbacService.updatePermission(id, parsed.data);
     res.json(toSuccess("RBAC permission updated", updated));
   } catch (error) {
     if (error instanceof Error && error.message.startsWith("No fields")) {
@@ -135,8 +158,12 @@ export const updateRbacPermission = async (req: Request, res: Response) => {
 };
 
 export const deleteRbacPermission = async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res.status(400).json(toError("Invalid permission ID"));
+  }
   try {
-    const removed = await rbacService.deletePermission(req.params.id);
+    const removed = await rbacService.deletePermission(id);
     res.json(toSuccess("RBAC permission deleted", removed));
   } catch (error) {
     return handlePrismaError(res, error);
@@ -151,7 +178,11 @@ export const listRbacRoles = async (req: Request, res: Response) => {
 };
 
 export const getRbacRole = async (req: Request, res: Response) => {
-  const role = await rbacService.getRole(req.params.id);
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res.status(400).json(toError("Invalid role ID"));
+  }
+  const role = await rbacService.getRole(id);
   if (!role) {
     return res.status(404).json(toError("Role not found"));
   }
@@ -177,6 +208,10 @@ export const createRbacRole = async (req: Request, res: Response) => {
 };
 
 export const updateRbacRole = async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res.status(400).json(toError("Invalid role ID"));
+  }
   const parsed = rbacRoleUpdateSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json(toError("Invalid payload", parsed.error.flatten()));
@@ -189,7 +224,7 @@ export const updateRbacRole = async (req: Request, res: Response) => {
 
   try {
     const { permissions: updatePermissions, ...roleUpdates } = updates;
-    const updated = await rbacService.updateRole(req.params.id, {
+    const updated = await rbacService.updateRole(id, {
       ...roleUpdates,
       permissionIds: updatePermissions,
     });
@@ -200,8 +235,12 @@ export const updateRbacRole = async (req: Request, res: Response) => {
 };
 
 export const deleteRbacRole = async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res.status(400).json(toError("Invalid role ID"));
+  }
   try {
-    const removed = await rbacService.deleteRole(req.params.id);
+    const removed = await rbacService.deleteRole(id);
     res.json(toSuccess("RBAC role deleted", removed));
   } catch (error) {
     return handlePrismaError(res, error);
@@ -216,7 +255,11 @@ export const listRbacAssignments = async (req: Request, res: Response) => {
 };
 
 export const getRbacAssignment = async (req: Request, res: Response) => {
-  const assignment = await rbacService.getAssignment(req.params.id);
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res.status(400).json(toError("Invalid assignment ID"));
+  }
+  const assignment = await rbacService.getAssignment(id);
   if (!assignment) {
     return res.status(404).json(toError("Assignment not found"));
   }
@@ -229,13 +272,8 @@ export const createRbacAssignment = async (req: Request, res: Response) => {
     return res.status(400).json(toError("Invalid payload", parsed.error.flatten()));
   }
 
-  const payload = {
-    ...parsed.data,
-    id: parsed.data.id ?? `assign-${crypto.randomUUID()}`,
-  };
-
   try {
-    const created = await rbacService.createAssignment(payload as any);
+    const created = await rbacService.createAssignment(parsed.data as any);
     res.status(201).json(toSuccess("RBAC assignment created", created));
   } catch (error) {
     return handlePrismaError(res, error);
@@ -243,6 +281,10 @@ export const createRbacAssignment = async (req: Request, res: Response) => {
 };
 
 export const updateRbacAssignment = async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res.status(400).json(toError("Invalid assignment ID"));
+  }
   const parsed = rbacAssignmentUpdateSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json(toError("Invalid payload", parsed.error.flatten()));
@@ -254,7 +296,7 @@ export const updateRbacAssignment = async (req: Request, res: Response) => {
   }
 
   try {
-    const updated = await rbacService.updateAssignment(req.params.id, updates as any);
+    const updated = await rbacService.updateAssignment(id, updates as any);
     res.json(toSuccess("RBAC assignment updated", updated));
   } catch (error) {
     return handlePrismaError(res, error);
@@ -262,8 +304,12 @@ export const updateRbacAssignment = async (req: Request, res: Response) => {
 };
 
 export const deleteRbacAssignment = async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
+    return res.status(400).json(toError("Invalid assignment ID"));
+  }
   try {
-    const removed = await rbacService.deleteAssignment(req.params.id);
+    const removed = await rbacService.deleteAssignment(id);
     res.json(toSuccess("RBAC assignment deleted", removed));
   } catch (error) {
     return handlePrismaError(res, error);
