@@ -7,8 +7,12 @@ coverage/
 logs/
 npm-debug.log*
 
-.env
+# .env
+uploads
 .env.*
+
+prisma/migrations/*
+prisma/migrations/migration_lock.toml
 
 .vscode/
 .idea/

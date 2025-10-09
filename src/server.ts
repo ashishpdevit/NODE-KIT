@@ -13,6 +13,8 @@ import { apiRouter } from "./routes";
 import { toSuccess } from "@/core/utils/httpResponse";
 import { logger } from "@/core/utils/logger";
 import { apiKeyAuth } from "./core/middlewares/apiKeyAuth";
+import { uploadRouter } from "./modules/shared";
+import path from "path";
 
 export const createApp = (): Express => {
   const app = express();
@@ -29,6 +31,10 @@ export const createApp = (): Express => {
   app.get("/", (_req, res) => {
     res.json(toSuccess("Welcome to the Node Starter Kit"));
   });
+
+  app.use("/uploads", express.static(path.join(process.cwd(), "uploads")))
+  // app.use("/private-uploads", authMiddleware, express.static(path.join(process.cwd(), "uploads/private")));
+
 
   app.use(apiKeyAuth);
   app.use("/api", apiRouter);
