@@ -16,6 +16,7 @@ import {
   languageRouter,
 } from "@/modules/admin";
 import { apiKeyAuth } from "@/core/middlewares/apiKeyAuth";
+import mediaRouter from "@/modules/shared/media/media.router";
 
 export const adminRoutes = Router();
 
@@ -33,3 +34,4 @@ adminRoutes.use("/contact-requests", adminContactRequestRouter);
 adminRoutes.use("/notifications", adminNotificationRouter);
 adminRoutes.use("/products", adminProductRouter);
 adminRoutes.use("/orders", adminOrderRouter);
+adminRoutes.use("/media", mediaRouter);

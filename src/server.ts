@@ -3,8 +3,9 @@ import cors from "cors";
 import express, { type Express } from "express";
 import helmet from "helmet";
 import { createServer, type Server } from "http";
+import path from "path";
 
-import { appConfig } from "@/core/config";
+import { appConfig, env } from "@/core/config";
 import { errorHandler } from "@/core/middlewares/errorHandler";
 import { notFoundHandler } from "@/core/middlewares/notFoundHandler";
 import { requestLogger } from "@/core/middlewares/requestLogger";
@@ -25,6 +26,13 @@ export const createApp = (): Express => {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(requestLogger);
+
+  // Serve static files for local storage (only if using local provider)
+  if (env.STORAGE_PROVIDER === "local") {
+    const uploadsPath = path.resolve(env.STORAGE_LOCAL_PATH);
+    app.use("/uploads", express.static(uploadsPath));
+    logger.info(`Serving static files from: ${uploadsPath}`);
+  }
 
   app.get("/", (_req, res) => {
     res.json(toSuccess("Welcome to the Node Starter Kit"));

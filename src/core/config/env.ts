@@ -11,7 +11,7 @@ export const envSchema = z.object({
   APP_API_KEY: z
     .string()
     .min(16, "APP_API_KEY must be at least 16 characters")
-    .default("local-dev-app-api-key"),
+    .default("node@123456789876"),
   APP_JWT_SECRET: z
     .string()
     .min(32, "APP_JWT_SECRET must be at least 32 characters")
@@ -73,6 +73,24 @@ export const envSchema = z.object({
   SMS_QUEUE_REMOVE_ON_COMPLETE: z.coerce.number().int().positive().optional(),
   SMS_QUEUE_REMOVE_ON_FAIL: z.coerce.number().int().positive().optional(),
   SMS_QUEUE_ATTEMPTS: z.coerce.number().int().positive().optional(),
+  // Storage Configuration
+  STORAGE_PROVIDER: z.enum(["local", "s3", "azure"]).default("local"),
+  STORAGE_LOCAL_PATH: z.string().default("./uploads"),
+  STORAGE_PUBLIC_URL: z.string().url().optional(),
+  // AWS S3 Configuration
+  AWS_S3_REGION: z.string().optional(),
+  AWS_S3_BUCKET: z.string().optional(),
+  AWS_S3_ACCESS_KEY_ID: z.string().optional(),
+  AWS_S3_SECRET_ACCESS_KEY: z.string().optional(),
+  AWS_S3_ENDPOINT: z.string().optional(),
+  // Azure Storage Configuration
+  AZURE_STORAGE_ACCOUNT_NAME: z.string().optional(),
+  AZURE_STORAGE_ACCOUNT_KEY: z.string().optional(),
+  AZURE_STORAGE_CONTAINER: z.string().optional(),
+  AZURE_STORAGE_CONNECTION_STRING: z.string().optional(),
+  // File Upload Configuration
+  MAX_FILE_SIZE: z.coerce.number().int().positive().default(10485760), // 10MB default
+  ALLOWED_FILE_TYPES: z.string().default("image/jpeg,image/png,image/gif,image/webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
 });
 
 export const env = envSchema.parse(process.env);

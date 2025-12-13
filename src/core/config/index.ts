@@ -1,4 +1,7 @@
-﻿import { env } from "./env";
+﻿import { env } from "@/core/config/env";
+
+// Re-export env for direct access
+export { env };
 
 export const appConfig = {
   name: env.APP_NAME,

@@ -9,6 +9,8 @@ import {
   orderRouter,
   productRouter,
 } from "@/modules/app";
+import { appAuth } from "@/core/middlewares/appAuth";
+import mediaRouter from "@/modules/shared/media/media.router";
 
 export const appRoutes = Router();
 
@@ -19,3 +21,4 @@ appRoutes.use("/products", productRouter);
 appRoutes.use("/faqs", faqRouter);
 appRoutes.use("/notifications", notificationRouter);
 appRoutes.use("/contact-requests", contactRequestRouter);
+appRoutes.use("/media", appAuth, mediaRouter);
