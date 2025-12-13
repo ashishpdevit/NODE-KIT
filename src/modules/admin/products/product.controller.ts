@@ -73,15 +73,22 @@ export const getProduct = async (req: Request, res: Response) => {
 };
 
 export const createProduct = async (req: Request, res: Response) => {
-  const parsed = productCreateSchema.safeParse(req.body);
+  // Remove 'images' from body if present (files come through req.files, not req.body)
+  const bodyWithoutFiles = { ...req.body };
+  delete bodyWithoutFiles.images;
+
+  const parsed = productCreateSchema.safeParse(bodyWithoutFiles);
   if (!parsed.success) {
     return res.status(400).json(toError("Invalid payload", parsed.error.flatten()));
   }
 
   const payload = buildCreatePayload(parsed.data);
+  
+  // Get uploaded files (if any)
+  const files = req.files as Express.Multer.File[] | undefined;
 
   try {
-    const created = await productService.create(payload as any);
+    const created = await productService.create(payload as any, files);
     res.status(201).json(toSuccess("Product created", created));
   } catch (error) {
     return handlePrismaError(res, error);
@@ -89,19 +96,26 @@ export const createProduct = async (req: Request, res: Response) => {
 };
 
 export const updateProduct = async (req: Request, res: Response) => {
-  const parsed = productUpdateSchema.safeParse(req.body);
+  // Remove 'images' from body if present (files come through req.files, not req.body)
+  const bodyWithoutFiles = { ...req.body };
+  delete bodyWithoutFiles.images;
+
+  const parsed = productUpdateSchema.safeParse(bodyWithoutFiles);
   if (!parsed.success) {
     return res.status(400).json(toError("Invalid payload", parsed.error.flatten()));
   }
 
   const updates = parsed.data;
-  if (Object.keys(updates).length === 0) {
+  if (Object.keys(updates).length === 0 && !req.files) {
     return res.status(400).json(toError("No fields provided for update"));
   }
 
+  // Get uploaded files (if any)
+  const files = req.files as Express.Multer.File[] | undefined;
+
   try {
     const id = parseNumericParam(req.params.id, "product id");
-    const updated = await productService.update(id, buildUpdatePayload(updates) as any);
+    const updated = await productService.update(id, buildUpdatePayload(updates) as any, files);
     res.json(toSuccess("Product updated", updated));
   } catch (error) {
     return handlePrismaError(res, error);

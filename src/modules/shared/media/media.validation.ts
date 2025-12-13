@@ -4,9 +4,14 @@
 
 import { z } from "zod";
 
-// Simple upload schema - just file and optional collection
+// Flexible upload schema - modelType and modelId are optional
+// If provided: attaches immediately (one-step)
+// If not provided: saves as temporary (can link later)
 export const uploadMediaSchema = z.object({
+  modelType: z.string().min(1).optional(),
+  modelId: z.coerce.number().int().positive().optional(),
   collectionName: z.string().optional().default("default"),
+  orderColumn: z.coerce.number().int().positive().optional(),
   customProperties: z.string().optional().transform((val) => {
     if (!val) return {};
     try {
@@ -94,6 +99,14 @@ export const reorderMediaSchema = z.object({
 export const getMediaByModelSchema = z.object({
   modelType: z.string().min(1),
   modelId: z.coerce.number().int().positive(),
+  collectionName: z.string().optional(),
+});
+
+// Link media to model schema
+export const linkMediaToModelSchema = z.object({
+  mediaIds: z.array(z.coerce.number().int().positive()).min(1, "At least one media ID is required"),
+  modelType: z.string().min(1, "Model type is required"),
+  modelId: z.coerce.number().int().positive("Model ID must be a positive number"),
   collectionName: z.string().optional(),
 });
 

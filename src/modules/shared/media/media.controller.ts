@@ -20,6 +20,7 @@ import {
   updateOrderSchema,
   reorderMediaSchema,
   getMediaByModelSchema,
+  linkMediaToModelSchema,
 } from "./media.validation";
 
 // Helper to convert BigInt to string for JSON serialization and format response
@@ -105,7 +106,9 @@ const getMediaPath = (media: any): string => {
 
 export class MediaController {
   /**
-   * Upload single media file (storage only, no DB)
+   * Upload single media file (flexible: storage + database)
+   * - If modelType/modelId provided: attaches immediately
+   * - If not provided: saves as temporary (can link later)
    */
   async uploadSingle(req: Request, res: Response, next: NextFunction) {
     try {
@@ -117,20 +120,14 @@ export class MediaController {
 
       const validatedData = uploadMediaSchema.parse(req.body);
 
-      const storageFile = await mediaService.uploadSingleMedia(file, validatedData);
+      const media = await mediaService.uploadSingleMedia(file, validatedData);
+
+      const message = validatedData.modelType && validatedData.modelId
+        ? "Media uploaded and linked to model successfully"
+        : "Media uploaded successfully. Use /link endpoint to link to a model.";
 
       return res.status(201).json(
-        toSuccess("File uploaded successfully. Use /attach endpoint to link to a model.", {
-          uuid: storageFile.uuid,
-          fileName: storageFile.fileName,
-          name: storageFile.name,
-          url: storageFile.url,
-          path: storageFile.path,
-          mimeType: storageFile.mimeType,
-          size: storageFile.size.toString(),
-          disk: storageFile.disk,
-          customProperties: storageFile.customProperties || {},
-        })
+        toSuccess(message, serializeMedia(media))
       );
     } catch (error) {
       next(error);
@@ -138,7 +135,9 @@ export class MediaController {
   }
 
   /**
-   * Upload multiple media files (storage only, no DB)
+   * Upload multiple media files (flexible: storage + database)
+   * - If modelType/modelId provided: attaches immediately
+   * - If not provided: saves as temporary (can link later)
    */
   async uploadMultiple(req: Request, res: Response, next: NextFunction) {
     try {
@@ -150,23 +149,14 @@ export class MediaController {
 
       const validatedData = uploadMediaSchema.parse(req.body);
 
-      const storageFiles = await mediaService.uploadMultipleMedia(files, validatedData);
+      const mediaRecords = await mediaService.uploadMultipleMedia(files, validatedData);
+
+      const message = validatedData.modelType && validatedData.modelId
+        ? `${mediaRecords.length} media files uploaded and linked to model successfully`
+        : `${mediaRecords.length} media files uploaded successfully. Use /link endpoint to link to a model.`;
 
       return res.status(201).json(
-        toSuccess(
-          `${storageFiles.length} files uploaded successfully. Use /attach-multiple to link to a model.`,
-          storageFiles.map(sf => ({
-            uuid: sf.uuid,
-            fileName: sf.fileName,
-            name: sf.name,
-            url: sf.url,
-            path: sf.path,
-            mimeType: sf.mimeType,
-            size: sf.size.toString(),
-            disk: sf.disk,
-            customProperties: sf.customProperties || {},
-          }))
-        )
+        toSuccess(message, serializeMedia(mediaRecords))
       );
     } catch (error) {
       next(error);
@@ -465,6 +455,32 @@ export class MediaController {
       const media = await mediaService.detachMedia(id);
 
       return res.json(toSuccess("Media detached from model (removed from database, file remains in storage)", serializeMedia(media)));
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Link media to a model (update existing media records)
+   * Useful for linking uploaded images to a product after product creation
+   */
+  async linkMediaToModel(req: Request, res: Response, next: NextFunction) {
+    try {
+      const linkData = linkMediaToModelSchema.parse(req.body);
+
+      const updatedMedia = await mediaService.linkMediaToModel(
+        linkData.mediaIds,
+        linkData.modelType,
+        linkData.modelId,
+        linkData.collectionName
+      );
+
+      return res.json(
+        toSuccess(
+          `${updatedMedia.length} media files linked to model successfully`,
+          serializeMedia(updatedMedia)
+        )
+      );
     } catch (error) {
       next(error);
     }

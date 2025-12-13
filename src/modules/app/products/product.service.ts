@@ -8,6 +8,8 @@ import type {
   PaginatedResult 
 } from "@/core/utils/pagination";
 import { createPaginatedResponse } from "@/core/utils/pagination";
+import { mediaService } from "@/core/services/media.service";
+import { serializeMediaArray } from "@/core/utils/mediaSerializer";
 
 type ProductFilters = { status?: string; category?: string; tag?: string };
 
@@ -44,15 +46,21 @@ const parseJson = <T>(value: string | null | undefined, fallback: T): T => {
   }
 };
 
-const mapProduct = (product: ProductRecord) => ({
-  ...product,
-  images: parseJson<string[]>(product.images as string | null, []),
-  tags: parseJson<string[]>(product.tags as string | null, []),
-  variants: parseJson<any[]>(product.variants as string | null, []),
-  dimensions: parseJson<Record<string, unknown> | null>(product.dimensions as string | null, null),
-  shipping: parseJson<Record<string, unknown> | null>(product.shipping as string | null, null),
-  seo: parseJson<Record<string, unknown> | null>(product.seo as string | null, null),
-});
+const mapProduct = async (product: ProductRecord) => {
+  // Fetch media for this product
+  const media = await mediaService.getMediaByModel("product", product.id, "images");
+  
+  return {
+    ...product,
+    images: parseJson<string[]>(product.images as string | null, []),
+    tags: parseJson<string[]>(product.tags as string | null, []),
+    variants: parseJson<any[]>(product.variants as string | null, []),
+    dimensions: parseJson<Record<string, unknown> | null>(product.dimensions as string | null, null),
+    shipping: parseJson<Record<string, unknown> | null>(product.shipping as string | null, null),
+    seo: parseJson<Record<string, unknown> | null>(product.seo as string | null, null),
+    media: serializeMediaArray(media), // Include media with URLs
+  };
+};
 
 const serialiseProduct = (data: Record<string, unknown>) => {
   const payload: Record<string, unknown> = { ...data };
@@ -85,7 +93,7 @@ export const productService = {
       select: baseSelect,
     });
 
-    const mapped = products.map(mapProduct);
+    const mapped = await Promise.all(products.map(mapProduct));
 
     if (!filters.tag) return mapped;
 
@@ -156,8 +164,8 @@ export const productService = {
       prisma.product.count({ where }),
     ]);
 
-    // Map products
-    let mappedProducts = products.map(mapProduct);
+    // Map products (with media)
+    let mappedProducts = await Promise.all(products.map(mapProduct));
 
     // Apply tag filter after mapping (since tags are JSON)
     if (filters.tag) {
@@ -185,26 +193,89 @@ export const productService = {
   },
   get: async (id: number) => {
     const product = await prisma.product.findUnique({ where: { id }, select: baseSelect });
-    return product ? mapProduct(product) : null;
+    return product ? await mapProduct(product) : null;
   },
-  create: async (data: Prisma.ProductCreateInput) => {
+  create: async (data: Prisma.ProductCreateInput, files?: Express.Multer.File[]) => {
+    // Create product first
     const created = await prisma.product.create({
       data: serialiseProduct(data),
       select: baseSelect,
     });
-    return mapProduct(created);
+
+    // If files are provided, upload them automatically and save to media table
+    if (files && files.length > 0) {
+      try {
+        const uploadedMedia = await mediaService.uploadMultipleMedia(files, {
+          modelType: "product",
+          modelId: created.id,
+          collectionName: "images",
+        });
+
+        // Optionally update product with media IDs in images field
+        const mediaIds = uploadedMedia.map(m => m.id.toString());
+        const existingImages = parseJson<string[]>(created.images as string | null, []);
+        const updatedImages = [...existingImages, ...mediaIds];
+
+        await prisma.product.update({
+          where: { id: created.id },
+          data: {
+            images: JSON.stringify(updatedImages),
+          },
+        });
+      } catch (error) {
+        // Log error but don't fail product creation
+        console.error("Error uploading product images:", error);
+      }
+    }
+
+    return await mapProduct(created);
   },
-  update: async (id: number, data: Prisma.ProductUpdateInput) => {
+  update: async (id: number, data: Prisma.ProductUpdateInput, files?: Express.Multer.File[]) => {
+    // Update product first
     const updated = await prisma.product.update({
       where: { id },
       data: serialiseProduct(data),
       select: baseSelect,
     });
-    return mapProduct(updated);
+
+    // If files are provided, upload them automatically and save to media table
+    if (files && files.length > 0) {
+      try {
+        const uploadedMedia = await mediaService.uploadMultipleMedia(files, {
+          modelType: "product",
+          modelId: id,
+          collectionName: "images",
+        });
+
+        // Add new media IDs to existing images
+        const mediaIds = uploadedMedia.map(m => m.id.toString());
+        const existingImages = parseJson<string[]>(updated.images as string | null, []);
+        const updatedImages = [...existingImages, ...mediaIds];
+
+        await prisma.product.update({
+          where: { id },
+          data: {
+            images: JSON.stringify(updatedImages),
+          },
+          select: baseSelect,
+        });
+      } catch (error) {
+        // Log error but don't fail product update
+        console.error("Error uploading product images:", error);
+      }
+    }
+
+    // Fetch updated product
+    const finalProduct = await prisma.product.findUnique({
+      where: { id },
+      select: baseSelect,
+    });
+
+    return finalProduct ? await mapProduct(finalProduct) : await mapProduct(updated);
   },
   delete: async (id: number) => {
     const removed = await prisma.product.delete({ where: { id }, select: baseSelect });
-    return mapProduct(removed);
+    return await mapProduct(removed);
   },
 };
 

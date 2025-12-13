@@ -129,6 +129,14 @@ router.post("/attach", mediaController.attachMedia);
 router.post("/attach-multiple", mediaController.attachMultipleMedia);
 
 /**
+ * @route POST /api/admin/media/link
+ * @route POST /api/app/media/link
+ * @desc Link media to a model (update existing media records)
+ * @access Private (Admin or App User)
+ */
+router.post("/link", mediaController.linkMediaToModel);
+
+/**
  * @route POST /api/admin/media/:id/detach
  * @route POST /api/app/media/:id/detach
  * @desc Detach media from model

@@ -9,8 +9,8 @@ import { UploadedFile, StorageFile, UploadOptions } from "@/core/storage/types";
 import { prisma } from "@/core/lib/prisma";
 
 export interface CreateMediaData {
-  modelType?: string;
-  modelId?: number | string;
+  modelType?: string;  // Optional - if not provided, saves as "temp"
+  modelId?: number | string;  // Optional - if not provided, uses 0
   collectionName?: string;
   customProperties?: Record<string, any>;
   orderColumn?: number;
@@ -39,47 +39,140 @@ export class MediaService {
   private storageProvider = getStorageProvider();
 
   /**
-   * Upload a single media file (storage only, no DB)
+   * Upload a single media file (flexible: storage + database)
+   * - If modelType/modelId provided: attaches immediately
+   * - If not provided: saves as temporary (can link later)
    */
   async uploadSingleMedia(
     file: Express.Multer.File,
     data: CreateMediaData
-  ): Promise<StorageFile> {
+  ): Promise<Media> {
     const uploadOptions: UploadOptions = {
       collectionName: data.collectionName || "default",
       customProperties: data.customProperties,
       isPublic: true,
     };
 
-    // Upload to storage provider only
+    // Upload to storage provider
     const storageFile = await this.storageProvider.uploadFile(
       file as UploadedFile,
       uploadOptions
     );
 
-    return storageFile;
+    // Use provided modelType/modelId or default to "temp"
+    const modelType = data.modelType || "temp";
+    const modelId = data.modelId ? BigInt(data.modelId) : BigInt(0);
+
+    // Calculate order column if not provided
+    let orderColumn = data.orderColumn;
+    if (orderColumn === undefined) {
+      const lastMedia = await prisma.media.findFirst({
+        where: {
+          modelType,
+          modelId,
+          collectionName: data.collectionName || "default",
+        },
+        orderBy: {
+          orderColumn: "desc",
+        },
+      });
+      orderColumn = lastMedia ? (lastMedia.orderColumn || 0) + 1 : 1;
+    }
+
+    // Save to database immediately
+    const media = await prisma.media.create({
+      data: {
+        modelType,
+        modelId,
+        uuid: storageFile.uuid || null,
+        collectionName: data.collectionName || "default",
+        name: storageFile.name,
+        fileName: storageFile.fileName,
+        mimeType: storageFile.mimeType,
+        disk: storageFile.disk,
+        conversionsDisk: data.conversionsDisk || null,
+        size: BigInt(storageFile.size),
+        orderColumn,
+        manipulations: data.manipulations || {},
+        customProperties: storageFile.customProperties || {},
+        generatedConversions: {},
+        responsiveImages: {},
+      },
+    });
+
+    return media;
   }
 
   /**
-   * Upload multiple media files (storage only, no DB)
+   * Upload multiple media files (flexible: storage + database)
+   * - If modelType/modelId provided: attaches immediately
+   * - If not provided: saves as temporary (can link later)
    */
   async uploadMultipleMedia(
     files: Express.Multer.File[],
     data: CreateMediaData
-  ): Promise<StorageFile[]> {
+  ): Promise<Media[]> {
     const uploadOptions: UploadOptions = {
       collectionName: data.collectionName || "default",
       customProperties: data.customProperties,
       isPublic: true,
     };
 
-    // Upload to storage provider only
+    // Upload to storage provider
     const storageFiles = await this.storageProvider.uploadFiles(
       files as UploadedFile[],
       uploadOptions
     );
 
-    return storageFiles;
+    // Use provided modelType/modelId or default to "temp"
+    const modelType = data.modelType || "temp";
+    const modelId = data.modelId ? BigInt(data.modelId) : BigInt(0);
+
+    // Get starting order column
+    const lastMedia = await prisma.media.findFirst({
+      where: {
+        modelType,
+        modelId,
+        collectionName: data.collectionName || "default",
+      },
+      orderBy: {
+        orderColumn: "desc",
+      },
+    });
+    let startOrder = lastMedia ? (lastMedia.orderColumn || 0) + 1 : 1;
+
+    // Save all to database immediately
+    const mediaRecords: Media[] = [];
+    for (let i = 0; i < storageFiles.length; i++) {
+      const storageFile = storageFiles[i];
+      const orderColumn = data.orderColumn !== undefined 
+        ? data.orderColumn + i 
+        : startOrder + i;
+
+      const media = await prisma.media.create({
+        data: {
+          modelType,
+          modelId,
+          uuid: storageFile.uuid || null,
+          collectionName: data.collectionName || "default",
+          name: storageFile.name,
+          fileName: storageFile.fileName,
+          mimeType: storageFile.mimeType,
+          disk: storageFile.disk,
+          conversionsDisk: data.conversionsDisk || null,
+          size: BigInt(storageFile.size),
+          orderColumn,
+          manipulations: data.manipulations || {},
+          customProperties: storageFile.customProperties || {},
+          generatedConversions: {},
+          responsiveImages: {},
+        },
+      });
+
+      mediaRecords.push(media);
+    }
+
+    return mediaRecords;
   }
 
   /**
@@ -441,6 +534,55 @@ export class MediaService {
     });
 
     return media;
+  }
+
+  /**
+   * Link media to a model (update existing media records)
+   * Useful for linking uploaded images to a product after product creation
+   */
+  async linkMediaToModel(
+    mediaIds: (number | string)[],
+    modelType: string,
+    modelId: number | string,
+    collectionName?: string
+  ): Promise<Media[]> {
+    const updatedMedia: Media[] = [];
+
+    for (const mediaId of mediaIds) {
+      const media = await this.getMediaById(mediaId);
+      
+      if (!media) {
+        throw new Error(`Media with ID ${mediaId} not found`);
+      }
+
+      // Calculate order column for the new model
+      const lastMedia = await prisma.media.findFirst({
+        where: {
+          modelType,
+          modelId: BigInt(modelId),
+          collectionName: collectionName || media.collectionName,
+        },
+        orderBy: {
+          orderColumn: "desc",
+        },
+      });
+      const orderColumn = lastMedia ? (lastMedia.orderColumn || 0) + 1 : 1;
+
+      // Update media to link to the new model
+      const updated = await prisma.media.update({
+        where: { id: BigInt(mediaId) },
+        data: {
+          modelType,
+          modelId: BigInt(modelId),
+          collectionName: collectionName || media.collectionName,
+          orderColumn,
+        },
+      });
+
+      updatedMedia.push(updated);
+    }
+
+    return updatedMedia;
   }
 }
 

@@ -28,17 +28,31 @@ export const createApp = (): Express => {
   app.use(requestLogger);
 
   // Serve static files for local storage (only if using local provider)
+  // This must be BEFORE apiKeyAuth to allow public access to images
   if (env.STORAGE_PROVIDER === "local") {
     const uploadsPath = path.resolve(env.STORAGE_LOCAL_PATH);
+    
+    // Serve files from /uploads path (backward compatibility)
     app.use("/uploads", express.static(uploadsPath));
-    logger.info(`Serving static files from: ${uploadsPath}`);
+    
+    // Serve files from collection paths (e.g., /images/, /gallery/, etc.)
+    // This allows URLs like /images/file.jpg to work directly
+    // Files are stored as: uploads/images/file.jpg
+    // URL: /images/file.jpg -> serves uploads/images/file.jpg
+    app.use(express.static(uploadsPath, {
+      // Don't serve directory listings
+      index: false,
+    }));
+    
+    logger.info(`Serving static files from: ${uploadsPath} (accessible at /{collectionName}/{fileName})`);
   }
 
   app.get("/", (_req, res) => {
     res.json(toSuccess("Welcome to the Node Starter Kit"));
   });
 
-  app.use(apiKeyAuth);
+  // API key auth - only applies to /api routes (not static files)
+  app.use("/api", apiKeyAuth);
   app.use("/api", apiRouter);
 
   app.use(notFoundHandler);

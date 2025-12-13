@@ -1100,22 +1100,40 @@
                 "method": "POST",
                 "header": [
                   {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  },
-                  {
                     "key": "x-api-key",
                     "value": "{{apiKey}}"
                   }
                 ],
                 "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"+1234567890\",\n  \"status\": \"Active\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "name",
+                      "value": "John Doe",
+                      "type": "text"
+                    },
+                    {
+                      "key": "email",
+                      "value": "john@example.com",
+                      "type": "text"
+                    },
+                    {
+                      "key": "phone",
+                      "value": "+1234567890",
+                      "type": "text"
+                    },
+                    {
+                      "key": "status",
+                      "value": "Active",
+                      "type": "text"
+                    },
+                    {
+                      "key": "profilePicture",
+                      "type": "file",
+                      "src": [],
+                      "description": "Customer profile picture (single file). Automatically uploaded to storage (local/AWS/Azure) and saved to media table. Response includes 'profilePicture' object (not array)."
                     }
-                  }
+                  ]
                 },
                 "url": {
                   "raw": "{{baseUrl}}/api/admin/customers",
@@ -1127,7 +1145,8 @@
                     "admin",
                     "customers"
                   ]
-                }
+                },
+                "description": "Create customer with profile picture. Single file is automatically uploaded to configured storage (local/AWS S3/Azure) and saved to media table. Response includes 'profilePicture' object with full URL. Works with all storage providers dynamically."
               }
             },
             {
@@ -1160,22 +1179,40 @@
                 "method": "PUT",
                 "header": [
                   {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  },
-                  {
                     "key": "x-api-key",
                     "value": "{{apiKey}}"
                   }
                 ],
                 "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"name\": \"John Doe Updated\",\n  \"email\": \"john.updated@example.com\",\n  \"phone\": \"+1234567890\",\n  \"status\": \"Active\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "name",
+                      "value": "John Doe Updated",
+                      "type": "text"
+                    },
+                    {
+                      "key": "email",
+                      "value": "john.updated@example.com",
+                      "type": "text"
+                    },
+                    {
+                      "key": "phone",
+                      "value": "+1234567890",
+                      "type": "text"
+                    },
+                    {
+                      "key": "status",
+                      "value": "Active",
+                      "type": "text"
+                    },
+                    {
+                      "key": "profilePicture",
+                      "type": "file",
+                      "src": [],
+                      "description": "Optional: Update profile picture. Single file. Automatically uploaded to storage and saved to media table. Response includes updated 'profilePicture' object."
                     }
-                  }
+                  ]
                 },
                 "url": {
                   "raw": "{{baseUrl}}/api/admin/customers/{{customerId}}",
@@ -1188,7 +1225,8 @@
                     "customers",
                     "{{customerId}}"
                   ]
-                }
+                },
+                "description": "Update customer with optional profile picture. Single file can be uploaded. Files are automatically uploaded to configured storage (local/AWS S3/Azure) and saved to media table. Response includes updated 'profilePicture' object with full URL."
               }
             },
             {
@@ -1230,22 +1268,62 @@
                     "value": "Bearer {{adminToken}}"
                   },
                   {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  },
-                  {
                     "key": "x-api-key",
                     "value": "{{apiKey}}"
                   }
                 ],
                 "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"name\": \"Sample Product\",\n  \"price\": 99.99,\n  \"inventory\": 50,\n  \"status\": \"Active\",\n  \"category\": \"Test\",\n  \"sku\": \"POSTMAN-SKU-001\",\n  \"tags\": [\n    \"beta\"\n  ]\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "name",
+                      "value": "Sample Product",
+                      "type": "text"
+                    },
+                    {
+                      "key": "price",
+                      "value": "99.99",
+                      "type": "text"
+                    },
+                    {
+                      "key": "inventory",
+                      "value": "50",
+                      "type": "text"
+                    },
+                    {
+                      "key": "status",
+                      "value": "Active",
+                      "type": "text"
+                    },
+                    {
+                      "key": "category",
+                      "value": "Test",
+                      "type": "text"
+                    },
+                    {
+                      "key": "sku",
+                      "value": "POSTMAN-SKU-001",
+                      "type": "text"
+                    },
+                    {
+                      "key": "tags",
+                      "value": "[\"beta\"]",
+                      "type": "text",
+                      "description": "JSON array as string"
+                    },
+                    {
+                      "key": "images",
+                      "type": "file",
+                      "src": [],
+                      "description": "Product images (multiple files allowed). Automatically uploaded to storage (local/AWS/Azure) and saved to media table."
+                    },
+                    {
+                      "key": "images",
+                      "type": "file",
+                      "src": [],
+                      "description": "Add more images if needed"
                     }
-                  }
+                  ]
                 },
                 "url": {
                   "raw": "{{baseUrl}}/api/admin/products",
@@ -1257,7 +1335,8 @@
                     "admin",
                     "products"
                   ]
-                }
+                },
+                "description": "Create product with images. Multiple files can be uploaded. Files are automatically uploaded to configured storage (local/AWS S3/Azure) and saved to media table. Response includes 'media' array with full URLs for each image. Works with all storage providers dynamically."
               }
             },
             {
@@ -1340,6 +1419,140 @@
                       "key": "category",
                       "value": "Electronics"
                     }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Get Product",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/products/{{productId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "products",
+                    "{{productId}}"
+                  ]
+                },
+                "description": "Get product by ID. Response includes 'media' array with full URLs for all product images."
+              }
+            },
+            {
+              "name": "Update Product",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "name",
+                      "value": "Updated Product Name",
+                      "type": "text"
+                    },
+                    {
+                      "key": "price",
+                      "value": "149.99",
+                      "type": "text"
+                    },
+                    {
+                      "key": "inventory",
+                      "value": "75",
+                      "type": "text"
+                    },
+                    {
+                      "key": "status",
+                      "value": "Active",
+                      "type": "text"
+                    },
+                    {
+                      "key": "category",
+                      "value": "Updated Category",
+                      "type": "text"
+                    },
+                    {
+                      "key": "tags",
+                      "value": "[\"updated\", \"new\"]",
+                      "type": "text",
+                      "description": "JSON array as string"
+                    },
+                    {
+                      "key": "images",
+                      "type": "file",
+                      "src": [],
+                      "description": "Optional: Add more product images. Multiple files allowed. Automatically uploaded to storage and saved to media table."
+                    },
+                    {
+                      "key": "images",
+                      "type": "file",
+                      "src": [],
+                      "description": "Add more images if needed"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/products/{{productId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "products",
+                    "{{productId}}"
+                  ]
+                },
+                "description": "Update product with optional images. Multiple files can be uploaded. Files are automatically uploaded to configured storage (local/AWS S3/Azure) and saved to media table. Response includes updated 'media' array with full URLs for all product images."
+              }
+            },
+            {
+              "name": "Delete Product",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/products/{{productId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "products",
+                    "{{productId}}"
                   ]
                 }
               }
@@ -1776,9 +1989,22 @@
                       "src": []
                     },
                     {
+                      "key": "modelType",
+                      "value": "product",
+                      "type": "text",
+                      "description": "Required: Model type (e.g., product, user, post)"
+                    },
+                    {
+                      "key": "modelId",
+                      "value": "{{productId}}",
+                      "type": "text",
+                      "description": "Required: Model ID"
+                    },
+                    {
                       "key": "collectionName",
                       "value": "images",
-                      "type": "text"
+                      "type": "text",
+                      "description": "Optional: Collection name (default: 'default')"
                     }
                   ]
                 },
@@ -1793,7 +2019,8 @@
                     "media",
                     "single"
                   ]
-                }
+                },
+                "description": "One-step upload: Uploads file to storage and saves to database immediately. Returns Media object with id, fileName, url, etc."
               }
             },
             {
@@ -1824,9 +2051,22 @@
                       "src": []
                     },
                     {
+                      "key": "modelType",
+                      "value": "product",
+                      "type": "text",
+                      "description": "Required: Model type (e.g., product, user, post)"
+                    },
+                    {
+                      "key": "modelId",
+                      "value": "{{productId}}",
+                      "type": "text",
+                      "description": "Required: Model ID"
+                    },
+                    {
                       "key": "collectionName",
                       "value": "gallery",
-                      "type": "text"
+                      "type": "text",
+                      "description": "Optional: Collection name (default: 'default')"
                     }
                   ]
                 },
@@ -1841,7 +2081,8 @@
                     "media",
                     "multiple"
                   ]
-                }
+                },
+                "description": "One-step upload: Uploads multiple files to storage and saves to database immediately. Returns array of Media objects."
               }
             },
             {
@@ -2252,7 +2493,7 @@
               }
             },
             {
-              "name": "Attach Media to Model",
+              "name": "Attach Media to Model (Legacy/Optional)",
               "request": {
                 "method": "POST",
                 "header": [
@@ -2289,11 +2530,12 @@
                     "media",
                     "attach"
                   ]
-                }
+                },
+                "description": "⚠️ LEGACY/OPTIONAL: Use upload endpoint with modelType/modelId instead. This endpoint is kept for backward compatibility or special cases where you need to attach pre-uploaded files."
               }
             },
             {
-              "name": "Attach Multiple Media",
+              "name": "Attach Multiple Media (Legacy/Optional)",
               "request": {
                 "method": "POST",
                 "header": [
@@ -2330,7 +2572,50 @@
                     "media",
                     "attach-multiple"
                   ]
-                }
+                },
+                "description": "⚠️ LEGACY/OPTIONAL: Use upload-multiple endpoint with modelType/modelId instead. This endpoint is kept for backward compatibility or special cases."
+              }
+            },
+            {
+              "name": "Link Media to Model",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "x-api-key",
+                    "value": "{{apiKey}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"mediaIds\": [5, 6, 7],\n  \"modelType\": \"product\",\n  \"modelId\": {{productId}},\n  \"collectionName\": \"images\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/media/link",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "admin",
+                    "media",
+                    "link"
+                  ]
+                },
+                "description": "Links uploaded media (saved as temporary) to a model. Use this after uploading images without modelType/modelId, then creating the product."
               }
             },
             {
@@ -3156,9 +3441,22 @@
                       "src": []
                     },
                     {
+                      "key": "modelType",
+                      "value": "user",
+                      "type": "text",
+                      "description": "Required: Model type (e.g., product, user, post)"
+                    },
+                    {
+                      "key": "modelId",
+                      "value": "{{userId}}",
+                      "type": "text",
+                      "description": "Required: Model ID"
+                    },
+                    {
                       "key": "collectionName",
                       "value": "avatars",
-                      "type": "text"
+                      "type": "text",
+                      "description": "Optional: Collection name (default: 'default')"
                     }
                   ]
                 },
@@ -3173,7 +3471,8 @@
                     "media",
                     "single"
                   ]
-                }
+                },
+                "description": "One-step upload: Uploads file to storage and saves to database immediately. Returns Media object with id, fileName, url, etc."
               }
             },
             {

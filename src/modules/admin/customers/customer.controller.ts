@@ -44,8 +44,11 @@ export const createCustomer = async (req: Request, res: Response) => {
     status: parsed.data.status ?? "Active",
   };
 
+  // Get uploaded profile picture (if any)
+  const file = req.file;
+
   try {
-    const created = await customerService.create(data);
+    const created = await customerService.create(data, file);
     res.status(201).json(toSuccess("Customer created", created));
   } catch (error) {
     return handlePrismaError(res, error);
@@ -59,13 +62,16 @@ export const updateCustomer = async (req: Request, res: Response) => {
   }
 
   const updates = parsed.data;
-  if (Object.keys(updates).length === 0) {
+  if (Object.keys(updates).length === 0 && !req.file) {
     return res.status(400).json(toError("No fields provided for update"));
   }
 
+  // Get uploaded profile picture (if any)
+  const file = req.file;
+
   try {
     const id = parseNumericParam(req.params.id, "customer id");
-    const updated = await customerService.update(id, updates);
+    const updated = await customerService.update(id, updates, file);
     res.json(toSuccess("Customer updated", updated));
   } catch (error) {
     return handlePrismaError(res, error);
