@@ -2,7 +2,7 @@
   {
     "id": 1,
     "name": "John Doe",
-    "email": "john.doe@example.com",
+    "email": "john.doe@yopmail.com",
     "phone": "+1-555-0123",
     "company": "Acme Corp",
     "status": "Active",
@@ -14,7 +14,7 @@
   {
     "id": 2,
     "name": "Jane Smith",
-    "email": "jane.smith@example.com",
+    "email": "jane.smith@yopmail.com",
     "phone": "+44-20-7946-0958",
     "company": "Tech Solutions Ltd",
     "status": "Active",
@@ -26,7 +26,7 @@
   {
     "id": 3,
     "name": "Michael Johnson",
-    "email": "michael.j@example.com",
+    "email": "michael.j@yopmail.com",
     "phone": "+49-30-12345678",
     "company": "Global Industries",
     "status": "Inactive",
@@ -38,7 +38,7 @@
   {
     "id": 4,
     "name": "Sarah Wilson",
-    "email": "sarah.wilson@example.com",
+    "email": "sarah.wilson@yopmail.com",
     "phone": "+33-1-42-86-83-26",
     "company": "Paris Consulting",
     "status": "Active",
@@ -50,7 +50,7 @@
   {
     "id": 5,
     "name": "David Brown",
-    "email": "david.brown@example.com",
+    "email": "david.brown@yopmail.com",
     "phone": "+81-3-1234-5678",
     "company": "Tokyo Enterprises",
     "status": "Active",

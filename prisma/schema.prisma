@@ -5,7 +5,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = "mysql://root:root@localhost:3306/node_kit"
+  url      = env("DATABASE_URL")
 }
 model Admin {
   id              Int      @id @default(autoincrement())
@@ -96,6 +96,7 @@ model AppMenuLink {
   type      String
   audience  String
   link      String
+  content   String?  @db.Text
   updatedAt DateTime @default(now())
 
   @@map("app_menu_links")

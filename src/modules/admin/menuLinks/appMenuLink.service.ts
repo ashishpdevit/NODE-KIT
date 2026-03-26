@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 
 import { prisma } from "@/core/lib/prisma";
+import type { AppMenuLinkCreateInput } from "./appMenuLink.validation";
 
 const baseSelect = {
   id: true,
@@ -8,6 +9,7 @@ const baseSelect = {
   type: true,
   audience: true,
   link: true,
+  content: true,
   updatedAt: true,
 } satisfies Prisma.AppMenuLinkSelect;
 
@@ -24,8 +26,15 @@ export const appMenuLinkService = {
     return prisma.appMenuLink.findMany({ where, orderBy: { id: "asc" }, select: baseSelect });
   },
   get: (id: number) => prisma.appMenuLink.findUnique({ where: { id }, select: baseSelect }),
-  create: (data: Prisma.AppMenuLinkCreateInput) =>
-    prisma.appMenuLink.create({ data, select: baseSelect }),
+  create: (payload: AppMenuLinkCreateInput) =>
+    prisma.appMenuLink.create({
+      data: {
+        ...payload,
+        // Prisma model requires non-null link; content-type entries can persist an empty link.
+        link: payload.link ?? "",
+      },
+      select: baseSelect,
+    }),
   update: (id: number, data: Prisma.AppMenuLinkUpdateInput) =>
     prisma.appMenuLink.update({ where: { id }, data, select: baseSelect }),
   delete: (id: number) =>

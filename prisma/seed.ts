@@ -390,8 +390,19 @@ async function seedRbac() {
 }
 
 async function main() {
-  await seedCoreData();
-  await seedRbac();
+  const args = process.argv.slice(2);
+  
+  if (args.includes("core")) {
+    console.log("Seeding core data...");
+    await seedCoreData();
+  } else if (args.includes("rbac")) {
+    console.log("Seeding RBAC data...");
+    await seedRbac();
+  } else {
+    console.log("Seeding all data...");
+    await seedCoreData();
+    await seedRbac();
+  }
 }
 
 main()
