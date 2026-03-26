@@ -1,18 +1,26 @@
-﻿import type { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { Prisma } from "@prisma/client";
 
 import { toError, toSuccess } from "@/core/utils/httpResponse";
 import { handlePrismaError } from "@/core/utils/prismaError";
 import { parseNumericParam } from "@/core/utils/requestHelpers";
+import { parseListQueryParams } from "@/core/utils/pagination";
 import { hashPassword } from "@/core/utils/security";
 
 import { adminService } from "./admin.service";
 import { adminCreateSchema, adminUpdateSchema } from "./admin.validation";
 
 export const listAdmins = async (req: Request, res: Response) => {
+  const { pagination, sort, search } = parseListQueryParams(req, ["id", "name", "email", "role", "status"], ["name", "email"]);
   const status = typeof req.query.status === "string" ? req.query.status : undefined;
-  const admins = await adminService.list(status);
-  res.json(toSuccess("Admins fetched", admins));
+  
+  const result = await adminService.listPaginated({ pagination, sort, search, filters: { status } });
+  
+  res.json({
+    status: true,
+    message: "Admins fetched successfully",
+    ...result
+  });
 };
 
 export const getAdmin = async (req: Request, res: Response) => {
@@ -101,6 +109,19 @@ export const deleteAdmin = async (req: Request, res: Response) => {
     const removed = await adminService.delete(id);
     res.json(toSuccess("Admin deleted", removed));
   } catch (error) {
+    return handlePrismaError(res, error);
+  }
+};
+
+export const toggleAdminStatus = async (req: Request, res: Response) => {
+  try {
+    const id = parseNumericParam(req.params.id, "admin id");
+    const updated = await adminService.toggleStatus(id);
+    res.json(toSuccess("Admin status toggled", updated));
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith("Invalid")) {
+      return res.status(400).json(toError(error.message));
+    }
     return handlePrismaError(res, error);
   }
 };

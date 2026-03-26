@@ -151,13 +151,11 @@ export const dashboardService = {
         {
           customerName: {
             contains: search.query,
-            mode: "insensitive" as const,
           },
         },
         {
           id: {
             contains: search.query,
-            mode: "insensitive" as const,
           },
         },
       ],
@@ -212,19 +210,16 @@ export const dashboardService = {
         {
           name: {
             contains: search.query,
-            mode: "insensitive" as const,
           },
         },
         {
           email: {
             contains: search.query,
-            mode: "insensitive" as const,
           },
         },
         {
           company: {
             contains: search.query,
-            mode: "insensitive" as const,
           },
         },
       ],
@@ -282,19 +277,16 @@ export const dashboardService = {
         {
           id: {
             contains: search.query,
-            mode: "insensitive" as const,
           },
         },
         {
           customerName: {
             contains: search.query,
-            mode: "insensitive" as const,
           },
         },
         {
           status: {
             contains: search.query,
-            mode: "insensitive" as const,
           },
         },
       ],
@@ -346,25 +338,21 @@ export const dashboardService = {
         {
           name: {
             contains: search.query,
-            mode: "insensitive" as const,
           },
         },
         {
           sku: {
             contains: search.query,
-            mode: "insensitive" as const,
           },
         },
         {
           category: {
             contains: search.query,
-            mode: "insensitive" as const,
           },
         },
         {
           brand: {
             contains: search.query,
-            mode: "insensitive" as const,
           },
         },
       ],
@@ -419,19 +407,16 @@ export const dashboardService = {
         {
           contact: {
             contains: search.query,
-            mode: "insensitive" as const,
           },
         },
         {
           message: {
             contains: search.query,
-            mode: "insensitive" as const,
           },
         },
         {
           status: {
             contains: search.query,
-            mode: "insensitive" as const,
           },
         },
       ],

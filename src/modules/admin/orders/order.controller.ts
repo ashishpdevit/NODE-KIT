@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 
 import { toError, toSuccess } from "@/core/utils/httpResponse";
 import { handlePrismaError } from "@/core/utils/prismaError";
+import { parseListQueryParams } from "@/core/utils/pagination";
 
 import { orderService } from "./order.service";
 import { orderCreateSchema, orderUpdateSchema } from "./order.validation";
@@ -9,9 +10,16 @@ import { orderCreateSchema, orderUpdateSchema } from "./order.validation";
 const toDate = (value?: string) => (value ? new Date(value) : new Date());
 
 export const listOrders = async (req: Request, res: Response) => {
+  const { pagination, sort, search } = parseListQueryParams(req, ["id", "customerName", "total", "date", "status", "createdAt"], ["id", "customerName"]);
   const status = typeof req.query.status === "string" ? req.query.status : undefined;
-  const orders = await orderService.list(status);
-  res.json(toSuccess("Orders fetched", orders));
+  
+  const result = await orderService.listPaginated({ pagination, sort, search, filters: { status } });
+  
+  res.json({
+    status: true,
+    message: "Orders fetched successfully",
+    ...result
+  });
 };
 
 export const getOrder = async (req: Request, res: Response) => {

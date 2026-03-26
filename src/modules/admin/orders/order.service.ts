@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { createOrderByClause, createSearchWhereClause, createPaginatedResponse, type PaginationOptions, type SortOptions, type SearchOptions } from "@/core/utils/pagination";
 
 import { prisma } from "@/core/lib/prisma";
 
@@ -35,6 +36,32 @@ export const orderService = {
       orderBy: { date: "desc" },
       select: baseSelect,
     }),
+  listPaginated: async (params: {
+    pagination: PaginationOptions;
+    sort: SortOptions | null;
+    search: SearchOptions | null;
+    filters?: { status?: string };
+  }) => {
+    const { pagination, sort, search, filters } = params;
+    
+    const where: Prisma.OrderWhereInput = {
+      ...createSearchWhereClause(search, "Order"),
+    };
+    if (filters?.status && filters.status !== 'all') where.status = filters.status;
+
+    const [total, data] = await Promise.all([
+      prisma.order.count({ where }),
+      prisma.order.findMany({
+        where,
+        orderBy: createOrderByClause(sort) || { date: "desc" },
+        skip: pagination.offset,
+        take: pagination.limit,
+        select: baseSelect,
+      }),
+    ]);
+
+    return createPaginatedResponse(data, total, pagination, "/api/admin/orders", { status: filters?.status || "" });
+  },
   get: (id: string) => prisma.order.findUnique({ where: { id }, select: baseSelect }),
   create: async (data: OrderCreatePayload) => {
     const id = data.id ?? (await generateOrderId());

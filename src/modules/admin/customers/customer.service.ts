@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { createOrderByClause, createSearchWhereClause, createPaginatedResponse, type PaginationOptions, type SortOptions, type SearchOptions } from "@/core/utils/pagination";
 
 import { prisma } from "@/core/lib/prisma";
 import { mediaService } from "@/core/services/media.service";
@@ -40,6 +41,34 @@ export const customerService = {
 
     const customers = await prisma.customer.findMany({ where, orderBy: { id: "asc" }, select: baseSelect });
     return Promise.all(customers.map(mapCustomer));
+  },
+  listPaginated: async (params: {
+    pagination: PaginationOptions;
+    sort: SortOptions | null;
+    search: SearchOptions | null;
+    filters?: { status?: string; country?: string };
+  }) => {
+    const { pagination, sort, search, filters } = params;
+    
+    const where: Prisma.CustomerWhereInput = {
+      ...createSearchWhereClause(search, "Customer"),
+    };
+    if (filters?.status && filters.status !== 'all') where.status = filters.status;
+    if (filters?.country && filters.country !== 'all') where.country = filters.country;
+
+    const [total, data] = await Promise.all([
+      prisma.customer.count({ where }),
+      prisma.customer.findMany({
+        where,
+        orderBy: createOrderByClause(sort) || { id: "desc" },
+        skip: pagination.offset,
+        take: pagination.limit,
+        select: baseSelect,
+      }),
+    ]);
+
+    const mappedData = await Promise.all(data.map(mapCustomer));
+    return createPaginatedResponse(mappedData, total, pagination, "/api/admin/customers", { status: filters?.status || "", country: filters?.country || "" });
   },
   get: async (id: number) => {
     const customer = await prisma.customer.findUnique({ where: { id }, select: baseSelect });

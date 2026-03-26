@@ -3,16 +3,23 @@ import type { Request, Response } from "express";
 import { toError, toSuccess } from "@/core/utils/httpResponse";
 import { handlePrismaError } from "@/core/utils/prismaError";
 import { parseNumericParam } from "@/core/utils/requestHelpers";
+import { parseListQueryParams } from "@/core/utils/pagination";
 
 import { faqService } from "@/modules/app/faqs/faq.service";
 import { faqCreateSchema, faqUpdateSchema } from "@/modules/app/faqs/faq.validation";
 
 export const listFaqs = async (req: Request, res: Response) => {
+  const { pagination, sort, search } = parseListQueryParams(req, ["id", "status", "type", "createdAt"], ["question", "answer"]);
   const status = typeof req.query.status === "string" ? req.query.status : undefined;
   const type = typeof req.query.type === "string" ? req.query.type : undefined;
 
-  const faqs = await faqService.list({ status, type });
-  res.json(toSuccess("FAQs fetched", faqs));
+  const result = await faqService.listPaginated({ pagination, sort, search, filters: { status, type } });
+  
+  res.json({
+    status: true,
+    message: "FAQs fetched successfully",
+    ...result
+  });
 };
 
 export const getFaq = async (req: Request, res: Response) => {

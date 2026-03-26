@@ -136,7 +136,6 @@ export const createSearchWhereClause = (searchOptions: SearchOptions | null, mod
   const searchConditions = searchOptions.fields.map((field) => ({
     [field]: {
       contains: searchOptions.query,
-      mode: "insensitive" as const,
     },
   }));
 

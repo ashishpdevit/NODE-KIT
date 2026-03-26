@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { createOrderByClause, createSearchWhereClause, createPaginatedResponse, type PaginationOptions, type SortOptions, type SearchOptions } from "@/core/utils/pagination";
 
 import { prisma } from "@/core/lib/prisma";
 
@@ -39,6 +40,34 @@ export const faqService = {
 
     const faqs = await prisma.faq.findMany({ where, orderBy: { id: "asc" }, select: baseSelect });
     return faqs.map(mapFaq);
+  },
+  listPaginated: async (params: {
+    pagination: PaginationOptions;
+    sort: SortOptions | null;
+    search: SearchOptions | null;
+    filters?: { status?: string; type?: string };
+  }) => {
+    const { pagination, sort, search, filters } = params;
+    
+    const where: Prisma.FaqWhereInput = {
+      ...createSearchWhereClause(search, "Faq"),
+    };
+    if (filters?.status && filters.status !== 'all') where.status = filters.status;
+    if (filters?.type && filters.type !== 'all') where.type = filters.type;
+
+    const [total, data] = await Promise.all([
+      prisma.faq.count({ where }),
+      prisma.faq.findMany({
+        where,
+        orderBy: createOrderByClause(sort) || { id: "desc" },
+        skip: pagination.offset,
+        take: pagination.limit,
+        select: baseSelect,
+      }),
+    ]);
+
+    const mappedData = data.map(mapFaq);
+    return createPaginatedResponse(mappedData, total, pagination, "/api/admin/faqs", { status: filters?.status || "", type: filters?.type || "" });
   },
   get: async (id: number) => {
     const faq = await prisma.faq.findUnique({ where: { id }, select: baseSelect });

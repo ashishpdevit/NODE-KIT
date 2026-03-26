@@ -3,16 +3,23 @@ import type { Request, Response } from "express";
 import { toError, toSuccess } from "@/core/utils/httpResponse";
 import { handlePrismaError } from "@/core/utils/prismaError";
 import { parseNumericParam } from "@/core/utils/requestHelpers";
+import { parseListQueryParams } from "@/core/utils/pagination";
 
 import { customerService } from "./customer.service";
 import { customerCreateSchema, customerUpdateSchema } from "./customer.validation";
 
 export const listCustomers = async (req: Request, res: Response) => {
+  const { pagination, sort, search } = parseListQueryParams(req, ["id", "name", "email", "status", "country", "createdAt"], ["name", "email", "phone", "company"]);
   const status = typeof req.query.status === "string" ? req.query.status : undefined;
   const country = typeof req.query.country === "string" ? req.query.country : undefined;
 
-  const customers = await customerService.list({ status, country });
-  res.json(toSuccess("Customers fetched", customers));
+  const result = await customerService.listPaginated({ pagination, sort, search, filters: { status, country } });
+  
+  res.json({
+    status: true,
+    message: "Customers fetched successfully",
+    ...result
+  });
 };
 
 export const getCustomer = async (req: Request, res: Response) => {
